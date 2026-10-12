@@ -1,0 +1,425 @@
+/* ==========================================================================
+   Authentication & Registration Styling (Wireframes 2, 3, 4, 5)
+   ========================================================================== */
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+}
+
+.auth-body-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+/* ============================
+   Role Selection Cards (Wireframe 3)
+   ============================ */
+.role-select-container {
+  max-width: 1050px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.role-select-header {
+  margin-bottom: 3rem;
+}
+
+.role-select-header h2 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.role-select-header p {
+  color: #64748b;
+  font-size: 1.05rem;
+}
+
+.role-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.role-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 2px solid #e2e8f0;
+  padding: 2.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.15);
+  border-color: var(--primary-500);
+}
+
+.role-icon-box {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: all var(--transition-normal);
+}
+
+.role-card:hover .role-icon-box {
+  transform: scale(1.08);
+}
+
+.role-icon-superadmin {
+  background: #f0fdf4;
+  color: #10b981;
+  border: 1px solid #bbf7d0;
+}
+
+.role-icon-hr {
+  background: #eff6ff;
+  color: #3b82f6;
+  border: 1px solid #bfdbfe;
+}
+
+.role-icon-employee {
+  background: #faf5ff;
+  color: #a855f7;
+  border: 1px solid #e9d5ff;
+}
+
+.role-card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+  color: #0f172a;
+}
+
+.role-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+  flex: 1;
+  line-height: 1.55;
+}
+
+.role-card .role-btn {
+  width: 100%;
+}
+
+/* ============================
+   Login Page Card (Wireframe 2)
+   ============================ */
+.login-card-box {
+  max-width: 460px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  padding: 2.75rem 2.25rem;
+  margin: 0 auto;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-badge-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
+}
+
+.login-header h2 {
+  font-size: 1.85rem;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.login-header p {
+  color: #64748b;
+  font-size: 0.925rem;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 1rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.input-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  color: #94a3b8;
+  padding: 0.35rem;
+  border-radius: 4px;
+  transition: color var(--transition-fast);
+}
+
+.input-toggle-btn:hover {
+  color: #475569;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  font-size: 0.925rem;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: all var(--transition-fast);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.form-control.input-padded {
+  padding-left: 2.75rem;
+}
+
+.form-control.is-invalid {
+  border-color: #ef4444;
+  background-color: #fffaf0;
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.field-error-text {
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.form-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--primary-600);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.forgot-link {
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
+.alert-banner {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.auth-footer-prompt {
+  text-align: center;
+  margin-top: 1.75rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.auth-footer-prompt a {
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
+/* ============================
+   Registration Split View Layouts (Wireframes 4 & 5)
+   ============================ */
+.split-auth-container {
+  max-width: 1100px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.split-form-side {
+  padding: 2.75rem 2.5rem;
+}
+
+.split-form-header {
+  margin-bottom: 2rem;
+}
+
+.split-form-header h2 {
+  font-size: 1.75rem;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.split-form-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.form-section-divider {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Split Visual Side */
+.split-visual-side {
+  background: linear-gradient(135deg, #091322 0%, #0f1f38 100%);
+  color: #ffffff;
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+.split-visual-side::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.visual-illustration-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px dashed rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-400);
+  margin-bottom: 2rem;
+}
+
+.split-visual-side h3 {
+  color: #ffffff;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+.split-visual-side p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 320px;
+}
+
+@media (max-width: 900px) {
+  .role-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .split-auth-container {
+    grid-template-columns: 1fr;
+  }
+  .split-visual-side {
+    display: none;
+  }
+}
