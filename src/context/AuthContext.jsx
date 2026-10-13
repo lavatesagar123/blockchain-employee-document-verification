@@ -1,121 +1,95 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../services/api';
-import {
-  getStoredAuthUser,
-  saveAuthSession,
-  clearAuthSession,
-  getStoredUsers,
-  getStoredCompanies
-} from '../services/storageService';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { authService } from '../services/authService';
+import { getStoredToken, clearStoredToken } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => getStoredToken());
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
-  // Initialize and maintain session on page refresh
-  useEffect(() => {
-    const initAuth = () => {
-      try {
-        const storedUser = getStoredAuthUser();
-        if (storedUser) {
-          // Verify against current state in storage to ensure real-time status updates
-          const users = getStoredUsers();
-          const companies = getStoredCompanies();
-          const currentUser = users.find((u) => u.email.toLowerCase() === storedUser.email.toLowerCase());
+  // Restore authenticated session on mount if a valid token exists
+  const checkSession = useCallback(async () => {
+    const existingToken = getStoredToken();
+    if (!existingToken) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
-          if (currentUser) {
-            let companyStatus = 'active';
-            let companyDetails = null;
-
-            if (currentUser.role === 'hr' && currentUser.companyId) {
-              companyDetails = companies.find((c) => c.id === currentUser.companyId);
-              if (companyDetails) {
-                companyStatus = companyDetails.status;
-              }
-            }
-
-            const updatedUser = {
-              ...currentUser,
-              companyStatus,
-              companyDetails,
-              token: storedUser.token || 'jwt_token_active'
-            };
-            setUser(updatedUser);
-            saveAuthSession(updatedUser);
-          } else {
-            clearAuthSession();
-            setUser(null);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to restore auth session:', err);
-        clearAuthSession();
+    try {
+      setLoading(true);
+      const userData = await authService.getMe();
+      setUser(userData);
+      setAuthError(null);
+    } catch (err) {
+      // If 401 Unauthorized or expired token, clear it
+      if (err.status === 401 || err.status === 403) {
+        clearStoredToken();
         setUser(null);
-      } finally {
-        setLoading(false);
+        setToken(null);
+      } else {
+        // If network error, log but keep token so user can retry
+        console.warn('Unable to verify current session with backend:', err.message);
       }
-    };
-
-    initAuth();
+      setAuthError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
 
   const login = async (email, password) => {
     setLoading(true);
+    setAuthError(null);
     try {
-      const authUser = await api.login({ email, password });
-      setUser(authUser);
-      saveAuthSession(authUser, authUser.token);
-      return authUser;
+      const response = await authService.login({ email, password });
+      const receivedToken = response?.token || response?.access;
+      setToken(receivedToken);
+
+      // Extract user object returned directly or fetch profile
+      let authenticatedUser = response?.user || response;
+      if (!authenticatedUser?.id && !authenticatedUser?.email) {
+        authenticatedUser = await authService.getMe();
+      }
+
+      setUser(authenticatedUser);
+      return authenticatedUser;
+    } catch (err) {
+      setAuthError(err.message);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    clearAuthSession();
-    setUser(null);
-  };
-
-  // Re-sync user session (e.g. after company approval status changes)
-  const refreshUser = () => {
-    if (!user) return;
-    const users = getStoredUsers();
-    const companies = getStoredCompanies();
-    const current = users.find((u) => u.email.toLowerCase() === user.email.toLowerCase());
-    if (current) {
-      let companyStatus = 'active';
-      let companyDetails = null;
-      if (current.role === 'hr' && current.companyId) {
-        companyDetails = companies.find((c) => c.id === current.companyId);
-        if (companyDetails) {
-          companyStatus = companyDetails.status;
-        }
-      }
-      const updated = {
-        ...current,
-        companyStatus,
-        companyDetails,
-        token: user.token
-      };
-      setUser(updated);
-      saveAuthSession(updated);
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+    } finally {
+      clearStoredToken();
+      setUser(null);
+      setToken(null);
+      setAuthError(null);
+      setLoading(false);
     }
-  };
-
-  const switchDemoRole = async (email, password) => {
-    return login(email, password);
   };
 
   const value = {
     user,
+    token,
     isAuthenticated: !!user,
     loading,
+    authError,
     login,
     logout,
-    refreshUser,
-    switchDemoRole
+    checkSession
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

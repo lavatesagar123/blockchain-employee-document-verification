@@ -2,32 +2,37 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CompanyProvider } from './context/CompanyContext';
-import { ToastProvider } from './components/common/Toast';
-import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { ToastProvider } from './components/Toast';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-// Public & Auth Pages (Wireframes 1 - 5)
+// Public Pages (1 - 8)
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
-import { RoleSelectPage } from './pages/RoleSelectPage';
-import { CompanyRegisterPage } from './pages/CompanyRegisterPage';
-import { EmployeeRegisterPage } from './pages/EmployeeRegisterPage';
-
-// Super Admin Pages (Wireframes 6, 7, 10)
-import { SuperAdminDashboard } from './pages/superadmin/SuperAdminDashboard';
-import { CompanyApprovalPage } from './pages/superadmin/CompanyApprovalPage';
-import { UserManagementPage } from './pages/superadmin/UserManagementPage';
-
-// HR Pages (Wireframe 8)
-import { HRDashboard } from './pages/hr/HRDashboard';
-import { HRProfilePage } from './pages/hr/HRProfilePage';
-
-// Employee Pages (Wireframe 9)
-import { EmployeeDashboard } from './pages/employee/EmployeeDashboard';
-import { EmployeeProfilePage } from './pages/employee/EmployeeProfilePage';
-
-// Fallback & RBAC Error Pages (Wireframes 11, 12)
+import { RoleSelectionPage } from './pages/RoleSelectionPage';
+import { CompanyRegistrationPage } from './pages/CompanyRegistrationPage';
+import { EmployeeRegistrationPage } from './pages/EmployeeRegistrationPage';
+import { PublicVerificationPage } from './pages/PublicVerificationPage';
 import { AccessDeniedPage } from './pages/AccessDeniedPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+
+// Super Admin Pages (9 - 12)
+import { SuperAdminDashboard } from './pages/SuperAdminDashboard';
+import { CompanyManagementPage } from './pages/CompanyManagementPage';
+import { UserManagementPage } from './pages/UserManagementPage';
+import { ActivityLogPage } from './pages/ActivityLogPage';
+
+// HR Pages (13 - 17)
+import { HRDashboard } from './pages/HRDashboard';
+import { CompanyProfilePage } from './pages/CompanyProfilePage';
+import { EmployeeManagementPage } from './pages/EmployeeManagementPage';
+import { DocumentIssuancePage } from './pages/DocumentIssuancePage';
+import { IssuedDocumentsPage } from './pages/IssuedDocumentsPage';
+
+// Employee Pages (18 - 21)
+import { EmployeeDashboard } from './pages/EmployeeDashboard';
+import { EmployeeProfilePage } from './pages/EmployeeProfilePage';
+import { MyDocumentsPage } from './pages/MyDocumentsPage';
+import { DocumentDetailsPage } from './pages/DocumentDetailsPage';
 
 function App() {
   return (
@@ -36,14 +41,17 @@ function App() {
         <AuthProvider>
           <CompanyProvider>
             <Routes>
-              {/* Public & Onboarding Flow */}
+              {/* Public Pages */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/roles" element={<RoleSelectPage />} />
-              <Route path="/register-company" element={<CompanyRegisterPage />} />
-              <Route path="/register-employee" element={<EmployeeRegisterPage />} />
+              <Route path="/roles" element={<RoleSelectionPage />} />
+              <Route path="/register-company" element={<CompanyRegistrationPage />} />
+              <Route path="/register-employee" element={<EmployeeRegistrationPage />} />
+              <Route path="/verify" element={<PublicVerificationPage />} />
+              <Route path="/verify-document" element={<PublicVerificationPage />} />
 
-              {/* Super Admin Area (Protected) */}
+              {/* Super Admin Protected Pages */}
+              <Route path="/superadmin" element={<Navigate to="/superadmin/dashboard" replace />} />
               <Route
                 path="/superadmin/dashboard"
                 element={
@@ -53,10 +61,18 @@ function App() {
                 }
               />
               <Route
+                path="/superadmin/companies"
+                element={
+                  <ProtectedRoute allowedRoles={['superadmin']}>
+                    <CompanyManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/superadmin/approvals"
                 element={
                   <ProtectedRoute allowedRoles={['superadmin']}>
-                    <CompanyApprovalPage />
+                    <CompanyManagementPage />
                   </ProtectedRoute>
                 }
               />
@@ -68,8 +84,17 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/superadmin/activity-logs"
+                element={
+                  <ProtectedRoute allowedRoles={['superadmin']}>
+                    <ActivityLogPage />
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* HR / Company Admin Area (Protected) */}
+              {/* HR / Company Admin Protected Pages */}
+              <Route path="/hr" element={<Navigate to="/hr/dashboard" replace />} />
               <Route
                 path="/hr/dashboard"
                 element={
@@ -82,12 +107,37 @@ function App() {
                 path="/hr/profile"
                 element={
                   <ProtectedRoute allowedRoles={['hr']}>
-                    <HRProfilePage />
+                    <CompanyProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/employees"
+                element={
+                  <ProtectedRoute allowedRoles={['hr']}>
+                    <EmployeeManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/issue-document"
+                element={
+                  <ProtectedRoute allowedRoles={['hr']}>
+                    <DocumentIssuancePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/documents"
+                element={
+                  <ProtectedRoute allowedRoles={['hr']}>
+                    <IssuedDocumentsPage />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Employee Area (Protected) */}
+              {/* Employee Protected Pages */}
+              <Route path="/employee" element={<Navigate to="/employee/dashboard" replace />} />
               <Route
                 path="/employee/dashboard"
                 element={
@@ -104,8 +154,32 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/employee/documents"
+                element={
+                  <ProtectedRoute allowedRoles={['employee']}>
+                    <MyDocumentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employee/documents/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['employee', 'hr', 'superadmin']}>
+                    <DocumentDetailsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/documents/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['employee', 'hr', 'superadmin']}>
+                    <DocumentDetailsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* Error & Security Pages */}
+              {/* Error and Fallback Pages */}
               <Route path="/access-denied" element={<AccessDeniedPage />} />
               <Route path="/404" element={<NotFoundPage />} />
               <Route path="*" element={<NotFoundPage />} />

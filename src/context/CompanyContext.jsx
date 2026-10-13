@@ -1,83 +1,77 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { api } from '../services/api';
+import { companyService } from '../services/companyService';
+import { employeeService } from '../services/employeeService';
 import { useAuth } from './AuthContext';
 
 const CompanyContext = createContext(null);
 
 export const CompanyProvider = ({ children }) => {
   const [companies, setCompanies] = useState([]);
-  const [usersList, setUsersList] = useState([]);
-  const [stats, setStats] = useState({
-    totalCompanies: 0,
-    pendingApproval: 0,
-    approvedCompanies: 0,
-    rejectedCompanies: 0,
-    totalHr: 0,
-    totalEmployees: 0,
-    totalUsers: 0
-  });
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { refreshUser } = useAuth();
+  const [error, setError] = useState(null);
+  const { isAuthenticated, user } = useAuth();
 
   const loadData = useCallback(async () => {
+    // Only attempt to fetch admin lists if authenticated as superadmin
+    if (!isAuthenticated || user?.role !== 'superadmin') {
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     try {
-      const [comps, usrs, st] = await Promise.all([
-        api.getCompanies(),
-        api.getUsers(),
-        api.getSystemStats()
+      const [compsRes, statsRes] = await Promise.allSettled([
+        companyService.getCompanies(),
+        companyService.getCompanyStats()
       ]);
-      setCompanies(comps);
-      setUsersList(usrs);
-      setStats(st);
+
+      if (compsRes.status === 'fulfilled') {
+        const list = Array.isArray(compsRes.value) ? compsRes.value : compsRes.value?.results || [];
+        setCompanies(list);
+      } else {
+        setError(compsRes.reason?.message || 'Failed to fetch companies list');
+      }
+
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value);
+      }
     } catch (err) {
-      console.error('Failed to load company & system data:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const approveCompany = async (companyId, remarks = '') => {
-    const updated = await api.updateCompanyStatus(companyId, {
-      status: 'approved',
-      remarks
-    });
+    const updated = await companyService.approveCompany(companyId, remarks);
     await loadData();
-    refreshUser();
     return updated;
   };
 
   const rejectCompany = async (companyId, remarks = '') => {
-    const updated = await api.updateCompanyStatus(companyId, {
-      status: 'rejected',
-      remarks
-    });
+    const updated = await companyService.rejectCompany(companyId, remarks);
     await loadData();
-    refreshUser();
     return updated;
   };
 
   const registerCompany = async (formData) => {
-    const res = await api.registerCompany(formData);
-    await loadData();
-    return res;
+    return await companyService.registerCompany(formData);
   };
 
   const registerEmployee = async (formData) => {
-    const res = await api.registerEmployee(formData);
-    await loadData();
-    return res;
+    return await employeeService.registerEmployee(formData);
   };
 
   const value = {
     companies,
-    usersList,
     stats,
     loading,
+    error,
     refreshData: loadData,
     approveCompany,
     rejectCompany,

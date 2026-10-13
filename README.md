@@ -1,121 +1,174 @@
-# 🛡️ VerifyChain | Blockchain-Based Employee Document Verification System
-## Authentication & Company Registration Module
+# TrustDoc — Blockchain Employee Document Verification System
 
-> **Selected Design Foundation:** **Option 1 ("VerifyChain")** enriched with the interactive approval modals and card badges of **Option 2 ("TrustDoc")**.
-> Built exclusively with **React.js**, **JavaScript**, **React Router DOM**, and modular **Vanilla CSS** (No TypeScript).
+**Frontend Architecture & UI Client**
 
----
-
-## 🌟 1. Why VerifyChain was Chosen as the Best Design
-
-Between the two provided reference designs:
-1. **Design 1 (VerifyChain)**: Features an industry-grade, 12-screen comprehensive architecture tailored for blockchain fintech:
-   - Deep slate & emerald green color tokens (`#090e17`, `#0f172a`, `#10b981`)
-   - Complete 12 wireframe states: Landing Page, Login, Role Selection, Company Registration, Employee Registration, Super Admin Dashboard, Company Approvals, HR Dashboard, Employee Dashboard, User Management, Access Denied (403), and 404 Not Found.
-2. **Design 2 (TrustDoc)**: Features clean curved cards and interactive approval modal dialogs with review remarks.
-
-**Best-of-Both Synthesis:**
-We selected **VerifyChain** as the primary architectural identity because of its complete 12-screen scope and authentic decentralized ledger aesthetics, while incorporating **TrustDoc's interactive modal dialog** (allowing the Super Admin to write optional verification remarks when approving or mandatory reasons when rejecting).
+TrustDoc is an enterprise React.js frontend built with Vite, React Router DOM, and pure CSS, engineered for cryptographic issuance, auditing, and public verification of employment credentials (Offer Letters, Letters of Intent, Experience Letters, and Relieving Letters).
 
 ---
 
-## 🔑 2. Demo Login Credentials & Quick Switcher
+## 1. Technology Stack
 
-For seamless development evaluation, a **1-Click Quick Role Switcher Bar** is pinned to the top of all pages, or you can manually enter these credentials on the [Login Page](http://localhost:5173/login):
+- **Framework**: React.js 19 (JavaScript ESModules)
+- **Bundler & Dev Server**: Vite 8
+- **Routing**: React Router DOM 7
+- **Icons**: Lucide React
+- **State Management**: React Context API (`AuthContext`, `CompanyContext`, `ToastContext`)
+- **Styling**: Vanilla CSS with curated TrustDoc design system (Emerald, Mint, Charcoal)
+- **API Client**: Native Fetch API with centralized error extraction and network disconnect detection
 
-| Role | Email | Password | Status & Purpose |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@verifychain.com` | `Admin@123` | Approves/rejects company applications, manages all users |
-| **HR (Approved)** | `hr@abctechnologies.com` | `Hr@123` | **ABC Technologies** (Approved company — full HR portal access) |
-| **HR (Pending Gate)** | `hr@nextgencorp.com` | `Hr@123` | **NextGen Corp** (Pending company — tests the approval gate) |
-| **Employee** | `employee@abctechnologies.com` | `Employee@123` | **Rahul Verma** (Employee portal & credential dashboard) |
-
-> 💡 **Reset Seeds Button:** Clicking **"Reset Seeds"** in the top demo bar restores `localStorage` back to factory demo state anytime.
-
----
-
-## 🚀 3. Implemented Features & Workflows
-
-### 1. Functional Authentication
-- **Universal Login (`/login`)**: Supports Super Admin, HR, and Employee login with real-time credential verification and show/hide password toggles.
-- **Session Persistence**: Page reloads preserve the authenticated user in `localStorage`.
-- **Validation**: Clear inline field validations and banner alerts for invalid inputs or incorrect passwords.
-- **Role Redirection**: Automatically directs users to their respective workspace upon login.
-- **Logout**: Clears the active session and redirects securely.
-
-### 2. Company Registration (`/register-company`)
-- Complete company onboarding form:
-  - **Company Details**: Name, Official Email, Phone, Corporate Address, Registration/CIN Number, Website.
-  - **Authorized HR**: HR Name, HR Login Email, Password, Confirm Password.
-- Automatically assigns status to **`Pending`**.
-- Displays post-submission confirmation banner explaining that Super Admin approval is required.
-
-### 3. Super Admin Company Auditing & Approval (`/superadmin/approvals`)
-- Filter tabs: **All**, **Pending**, **Approved**, **Rejected**, with real-time search.
-- **Approve Modal**: Enter optional verification remarks and confirm approval (unlocks HR portal).
-- **Reject Modal**: Enter required rejection reason.
-- **View Modal**: Inspect complete CIN number, corporate address, contact details, and timestamp.
-
-### 4. HR Approval Gating (`/hr/dashboard`)
-- If an HR's company is still **Pending** or **Rejected**, the HR dashboard displays a dedicated **Pending Verification Gate** blocking administrative actions.
-- Includes a live **"Check Registration Status"** button that synchronizes immediately once the Super Admin approves the company.
-- When **Approved**, unlocks the full workspace with employee statistics and corporate profile.
-
-### 5. Employee Self-Registration (`/register-employee`) & Portal (`/employee/dashboard`)
-- Full Name, Email, Phone, Password, and Confirm Password validation.
-- Immediate access to the Employee Dashboard with personal ID (`EMP-XXXX`) and verifiable status.
-
-### 6. Role-Based Access Control (RBAC) & Protected Routes
-- Route guards (`ProtectedRoute.jsx`) strictly enforce role privileges.
-- Unauthorized cross-role navigation is blocked and redirected to the **Access Denied (`/access-denied`)** page.
-- Unauthenticated access to dashboard routes redirects to `/login`.
+> **Note**: No backend implementation (Django, Python, Node.js) is bundled in this repository. All frontend service functions are prepared for future Django REST Framework integration.
 
 ---
 
-## 🛠️ 4. How to Run the Project
+## 2. Getting Started
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+### Prerequisites
 
-2. **Start Development Server**:
-   ```bash
-   npm run dev
-   ```
+- Node.js (v18 or higher recommended)
+- npm (v9 or higher)
 
-3. **Open in Browser**:
-   Navigate to [http://localhost:5173](http://localhost:5173).
+### Installation
 
-4. **Production Build Test**:
-   ```bash
-   npm run build
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/lavatesagar123/blockchain-employee-document-verification.git
 
----
+# Navigate into the project folder
+cd blockchain-employee-document-verification
 
-## 🔌 5. Django REST Framework (DRF) & MySQL Integration Guide
-
-All API calls are cleanly abstracted inside [`src/services/api.js`](file:///d:/blockchain%20emp%20system/src/services/api.js). To switch from `localStorage` to your Django backend, simply update `api.js` to target your endpoints:
-
-```javascript
-// Example Django REST Framework integration in src/services/api.js
-import axios from 'axios';
-
-const API_BASE = 'http://localhost:8000/api';
-
-export const api = {
-  login: async ({ email, password }) => {
-    const res = await axios.post(`${API_BASE}/auth/login/`, { email, password });
-    return res.data;
-  },
-  registerCompany: async (formData) => {
-    const res = await axios.post(`${API_BASE}/companies/register/`, formData);
-    return res.data;
-  },
-  updateCompanyStatus: async (id, { status, remarks }) => {
-    const res = await axios.patch(`${API_BASE}/companies/${id}/status/`, { status, remarks });
-    return res.data;
-  }
-};
+# Install dependencies
+npm install
 ```
+
+### Environment Configuration
+
+Copy the sample environment file:
+
+```bash
+cp .env.example .env
+```
+
+Inside `.env`, configure your target Django REST backend URL:
+
+```env
+# Backend API Base URL (Django REST Framework)
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+### Running Locally
+
+```bash
+# Start Vite development server
+npm run dev
+
+# Build production bundle
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run linter
+npm run lint
+```
+
+---
+
+## 3. Application Routes (21 Pages)
+
+### Public Pages
+| Route | Component | Description |
+|---|---|---|
+| `/` | `LandingPage` | Platform overview, blockchain hero, workflow pillars, quick verification entry |
+| `/login` | `LoginPage` | Professional authentication with email, password show/hide, remember me, forgot password modal |
+| `/roles` | `RoleSelectionPage` | Interactive overview of Super Admin, HR Admin, Employee, and Public Verifier |
+| `/register-company` | `CompanyRegistrationPage` | Corporate registration form + Authorized HR details with field validation |
+| `/register-employee` | `EmployeeRegistrationPage` | Talent registration with email, phone, role, and password confirmation |
+| `/verify` | `PublicVerificationPage` | Public document verification portal with ID input, client-side SHA-256 file digestion |
+| `/access-denied` | `AccessDeniedPage` | 403 Forbidden page for unauthorized role attempts |
+| `/404` / `*` | `NotFoundPage` | 404 Not Found fallback page |
+
+### Super Admin Pages
+| Route | Component | Description |
+|---|---|---|
+| `/superadmin/dashboard` | `SuperAdminDashboard` | Live KPI cards (Companies, Pending, HR, Employees) and recent applications |
+| `/superadmin/companies` | `CompanyManagementPage` | Enterprise directory with status tabs (All, Pending, Approved, Rejected, Suspended), auditing modals |
+| `/superadmin/users` | `UserManagementPage` | Account oversight with role filters, detail modals, and activation/deactivation controls |
+| `/superadmin/activity-logs` | `ActivityLogPage` | Security audit trail tracking ledger queries, approvals, and issuance actions |
+
+### HR Administrator Pages
+| Route | Component | Description |
+|---|---|---|
+| `/hr/dashboard` | `HRDashboard` | HR portal with Super Admin Approval Gate; unlocks full workspace upon corporate verification |
+| `/hr/profile` | `CompanyProfilePage` | Corporate incorporation details, CIN, official email, phone, address, and edit modal |
+| `/hr/employees` | `EmployeeManagementPage` | Company talent directory with search, filter, and employee onboarding modal |
+| `/hr/issue-document` | `DocumentIssuancePage` | Form for issuing Offer Letters, LOIs, Experience Letters, Relieving Letters + Live Certificate Preview |
+| `/hr/documents` | `IssuedDocumentsPage` | Complete registry of company-issued credentials with search, view details, and revocation dialog |
+
+### Employee Pages
+| Route | Component | Description |
+|---|---|---|
+| `/employee/dashboard` | `EmployeeDashboard` | Verified talent profile badge, credential overview, and quick verification link |
+| `/employee/profile` | `EmployeeProfilePage` | Professional profile details and blockchain identity anchor status |
+| `/employee/documents` | `MyDocumentsPage` | Portfolio table of issued credentials with download, share, and view actions |
+| `/employee/documents/:id` | `DocumentDetailsPage` | Inspection view with certificate template, cryptographic ID, QR code area, print/PDF action |
+
+---
+
+## 4. Required Backend APIs (Django REST Framework)
+
+The frontend service layer (`src/services/`) expects the following REST endpoints from the future Django backend:
+
+### Authentication (`authService.js`)
+- `POST /api/auth/login/` — Request: `{ email, password }` → Response: `{ token, user }`
+- `POST /api/auth/logout/` — Request: `{}` → Response: `204 No Content`
+- `GET /api/auth/me/` — Header: `Authorization: Bearer <token>` → Response: `{ id, name, email, role, company_id, company_status }`
+
+### Organization Management (`companyService.js`)
+- `POST /api/companies/register/` — Request: Company registration payload + HR user details
+- `GET /api/companies/me/` — Response: Authorized company profile details
+- `PATCH /api/companies/me/` — Request: `{ phone, address, website }`
+- `GET /api/admin/companies/` — Params: `?status=pending&search=...&page=1`
+- `GET /api/admin/companies/{id}/` — Response: Detailed company record
+- `POST /api/admin/companies/{id}/approve/` — Request: `{ remarks }`
+- `POST /api/admin/companies/{id}/reject/` — Request: `{ remarks }`
+- `POST /api/admin/companies/{id}/suspend/` — Request: `{ remarks }`
+- `POST /api/admin/companies/{id}/reactivate/` — Request: `{}`
+- `GET /api/admin/companies/stats/` — Response: `{ total_companies, pending_companies, total_hr_users, total_employees }`
+
+### Employee Management (`employeeService.js`)
+- `POST /api/employees/register/` — Request: Employee account registration payload
+- `GET /api/hr/employees/` — Params: `?search=...` → Response: List of company employees
+- `POST /api/hr/employees/` — Request: `{ name, email, employee_id, designation, department, phone, joining_date }`
+- `GET /api/hr/employees/{id}/` — Response: Single employee details
+- `GET /api/employees/me/` — Response: Current employee personal profile
+- `PATCH /api/employees/me/` — Request: `{ phone, designation }`
+
+### Document Issuance & Verification (`documentService.js` & `verificationService.js`)
+- `POST /api/documents/` — Request: `{ recipient_name, recipient_email, employee_id, document_type, designation, department, start_date, end_date, compensation, remarks }`
+- `GET /api/documents/` — Params: `?type=...&status=...&search=...` (Company issued registry)
+- `GET /api/employee/documents/` — Params: `?type=...&search=...` (Current employee documents)
+- `GET /api/documents/{id}/` — Response: Full document metadata, transaction hash, block height
+- `POST /api/documents/{id}/revoke/` — Request: `{ reason }`
+- `GET /api/verification/{verificationId}/` — Response: Public verification receipt `{ status, issuer_name, document_type, recipient_name, issue_date, transaction_hash, file_hash, block_number }`
+- `POST /api/verification/verify/` — Multipart FormData: `verification_id`, `document_file`
+
+### Super Admin Oversight (`userService.js`)
+- `GET /api/admin/users/` — Params: `?role=...&search=...`
+- `GET /api/admin/users/{id}/` — Response: User details
+- `POST /api/admin/users/{id}/status/` — Request: `{ status: 'active' | 'suspended' }`
+- `GET /api/admin/activity-logs/` — Params: `?action=...&search=...`
+
+---
+
+## 5. Security & Verification Design
+
+1. **No Simulated Data**: The frontend will never display a fake "Verified" or "Approved" badge without an authentic 200 OK response from the verification API.
+2. **Honest Connection Errors**: If the backend is unreachable, clear connection diagnostics display the targeted endpoint and instructions to start the backend.
+3. **Client-Side SHA-256**: When an optional file is provided on the public verification page, the client browser digests the file into a SHA-256 checksum using the Web Cryptography API (`crypto.subtle.digest`) before sending it for ledger comparison.
+4. **Clean Print Support**: Certificates feature `@media print` stylesheets that strip navigation bars and headers, generating crisp corporate credentials.
+
+---
+
+## 6. License
+
+This repository is private property and licensed for enterprise verification systems.

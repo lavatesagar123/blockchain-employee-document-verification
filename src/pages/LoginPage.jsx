@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Navbar } from '../components/common/Navbar';
-import { DemoBanner } from '../components/common/DemoBanner';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Navbar } from '../components/Navbar';
+import { Modal } from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
-import { useToast } from '../components/common/Toast';
+import { useToast } from '../components/Toast';
+import { isValidEmail } from '../utils/validators';
 import {
   ShieldCheck,
   Mail,
@@ -13,15 +14,16 @@ import {
   LogIn,
   AlertCircle,
   Building,
-  UserCheck
+  UserCheck,
+  ServerOff
 } from 'lucide-react';
+import { API_BASE_URL } from '../services/apiClient';
 import '../styles/auth.css';
 
 export const LoginPage = () => {
-  const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, authError } = useAuth();
   const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -33,19 +35,11 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [authError, setAuthError] = useState('');
-
-  // Pre-fill demo role if navigated via ?role=...
-  useEffect(() => {
-    const roleParam = searchParams.get('role');
-    if (roleParam === 'superadmin') {
-      setFormData((prev) => ({ ...prev, email: 'admin@verifychain.com', password: 'Admin@123' }));
-    } else if (roleParam === 'hr') {
-      setFormData((prev) => ({ ...prev, email: 'hr@abctechnologies.com', password: 'Hr@123' }));
-    } else if (roleParam === 'employee') {
-      setFormData((prev) => ({ ...prev, email: 'employee@abctechnologies.com', password: 'Employee@123' }));
-    }
-  }, [searchParams]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isNetworkFailure, setIsNetworkFailure] = useState(false);
+  const [forgotModalOpen, setForgotModalOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
   // If already authenticated, redirect to appropriate role portal
   useEffect(() => {
@@ -60,7 +54,7 @@ export const LoginPage = () => {
     const errs = {};
     if (!formData.email.trim()) {
       errs.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    } else if (!isValidEmail(formData.email.trim())) {
       errs.email = 'Please enter a valid email address';
     }
 
@@ -78,11 +72,13 @@ export const LoginPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear field-specific error
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-    if (authError) setAuthError('');
+    if (errorMessage) {
+      setErrorMessage('');
+      setIsNetworkFailure(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -90,19 +86,17 @@ export const LoginPage = () => {
     if (!validate()) return;
 
     setSubmitting(true);
-    setAuthError('');
+    setErrorMessage('');
+    setIsNetworkFailure(false);
 
     try {
-      const loggedUser = await login(formData.email, formData.password);
-      addToast(`Welcome back, ${loggedUser.name}!`, 'success');
+      const loggedUser = await login(formData.email.trim(), formData.password);
+      addToast(`Welcome back, ${loggedUser.name || 'User'}!`, 'success');
 
-      // Check if user came from a protected route
       const destination = location.state?.from?.pathname;
-
       if (destination && destination !== '/login') {
         navigate(destination);
       } else {
-        // Role-based destination
         if (loggedUser.role === 'superadmin') {
           navigate('/superadmin/dashboard');
         } else if (loggedUser.role === 'hr') {
@@ -112,11 +106,24 @@ export const LoginPage = () => {
         }
       }
     } catch (err) {
-      setAuthError(err.message || 'Invalid credentials. Please verify your email and password.');
+      const isNet = err.isNetworkError || err.message?.toLowerCase().includes('connect');
+      setIsNetworkFailure(isNet);
+      setErrorMessage(
+        err.message || 'Authentication failed. Please verify your credentials.'
+      );
       addToast(err.message || 'Login failed', 'error');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleForgotPasswordSubmit = (e) => {
+    e.preventDefault();
+    if (!isValidEmail(forgotEmail)) {
+      addToast('Please enter a valid email address.', 'warning');
+      return;
+    }
+    setForgotSubmitted(true);
   };
 
   return (
@@ -125,21 +132,34 @@ export const LoginPage = () => {
 
       <main className="auth-body-container">
         <div style={{ maxWidth: '480px', width: '100%' }}>
-          <DemoBanner />
-
           <div className="login-card-box animate-fade-in">
             <div className="login-header">
               <div className="login-badge-icon">
                 <ShieldCheck size={28} />
               </div>
-              <h2>Welcome Back</h2>
-              <p>Login to access your VerifyChain portal</p>
+              <h2>Sign In to TrustDoc</h2>
+              <p>Enter your credentials to access your verified portal</p>
             </div>
 
-            {authError && (
-              <div className="alert-banner alert-error">
-                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>{authError}</div>
+            {/* Error Banner */}
+            {(errorMessage || authError) && (
+              <div className="alert-banner alert-error animate-fade-in">
+                {isNetworkFailure ? (
+                  <ServerOff size={20} style={{ flexShrink: 0, marginTop: '2px', color: '#dc2626' }} />
+                ) : (
+                  <AlertCircle size={20} style={{ flexShrink: 0, marginTop: '2px', color: '#dc2626' }} />
+                )}
+                <div style={{ fontSize: '0.85rem' }}>
+                  <strong>{isNetworkFailure ? 'Authentication Service Unavailable' : 'Login Failed'}</strong>
+                  <p style={{ margin: '0.2rem 0 0', lineHeight: 1.4 }}>
+                    {errorMessage || authError}
+                  </p>
+                  {isNetworkFailure && (
+                    <div style={{ marginTop: '0.4rem', fontSize: '0.78rem', color: '#991b1b' }}>
+                      Configured endpoint: <code>{API_BASE_URL}/api/auth/login/</code>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -154,10 +174,11 @@ export const LoginPage = () => {
                     name="email"
                     type="email"
                     className={`form-control input-padded ${errors.email ? 'is-invalid' : ''}`}
-                    placeholder="Enter your registered email"
+                    placeholder="name@company.com"
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="email"
+                    disabled={submitting}
                   />
                 </div>
                 {errors.email && <div className="field-error-text">{errors.email}</div>}
@@ -167,9 +188,18 @@ export const LoginPage = () => {
               <div className="form-group">
                 <label htmlFor="password">
                   <span>Password</span>
-                  <Link to="/login" onClick={(e) => { e.preventDefault(); alert('Demo password reminder: Super Admin is Admin@123, HR is Hr@123, Employee is Employee@123'); }} className="forgot-link" style={{ fontSize: '0.8rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(formData.email);
+                      setForgotSubmitted(false);
+                      setForgotModalOpen(true);
+                    }}
+                    className="forgot-link"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
                     Forgot password?
-                  </Link>
+                  </button>
                 </label>
                 <div className="input-with-icon">
                   <Lock className="input-icon-left" size={18} />
@@ -182,6 +212,7 @@ export const LoginPage = () => {
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="current-password"
+                    disabled={submitting}
                   />
                   <button
                     type="button"
@@ -204,7 +235,7 @@ export const LoginPage = () => {
                     checked={formData.rememberMe}
                     onChange={handleChange}
                   />
-                  <span>Remember me</span>
+                  <span>Remember my session</span>
                 </label>
               </div>
 
@@ -216,24 +247,24 @@ export const LoginPage = () => {
                 disabled={submitting}
               >
                 {submitting ? (
-                  <span>Authenticating...</span>
+                  <span>Authenticating with server...</span>
                 ) : (
                   <>
                     <LogIn size={18} />
-                    <span>Login</span>
+                    <span>Sign In</span>
                   </>
                 )}
               </button>
             </form>
 
             <div className="auth-footer-prompt">
-              Don't have an account?{' '}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                <Link to="/register-company" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              Don't have an account?
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+                <Link to="/register-company" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                   <Building size={14} /> Register Company
                 </Link>
-                <span>•</span>
-                <Link to="/register-employee" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                <span style={{ color: '#cbd5e1' }}>•</span>
+                <Link to="/register-employee" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                   <UserCheck size={14} /> Employee Sign Up
                 </Link>
               </div>
@@ -241,6 +272,72 @@ export const LoginPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        isOpen={forgotModalOpen}
+        onClose={() => setForgotModalOpen(false)}
+        title="Reset Account Password"
+        footer={
+          forgotSubmitted ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setForgotModalOpen(false)}
+            >
+              Done
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setForgotModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleForgotPasswordSubmit}
+              >
+                Send Reset Link
+              </button>
+            </>
+          )
+        }
+      >
+        {forgotSubmitted ? (
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#d1fae5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <ShieldCheck size={26} />
+            </div>
+            <h4 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.4rem' }}>
+              Password Reset Requested
+            </h4>
+            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
+              If an account with <strong>{forgotEmail}</strong> exists in the database, a secure reset instruction link will be dispatched by the authentication service.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
+              Enter the email address associated with your TrustDoc account. You will receive a secure password recovery instruction if verified.
+            </p>
+            <div className="form-group">
+              <label htmlFor="forgot-email">Registered Email Address</label>
+              <input
+                id="forgot-email"
+                type="email"
+                className="form-control"
+                placeholder="name@company.com"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
