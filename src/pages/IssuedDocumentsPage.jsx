@@ -8,6 +8,8 @@ import { StatusBadge } from '../components/StatusBadge';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { formatDate, getDocumentTypeLabel, truncateHash } from '../utils/formatters';
+import { DocumentCertificate } from '../components/DocumentCertificate';
+import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
 import {
   FileText,
   FilePlus,
@@ -18,7 +20,9 @@ import {
   Copy,
   ExternalLink,
   ShieldCheck,
-  Calendar
+  Calendar,
+  Download,
+  Printer
 } from 'lucide-react';
 import '../styles/dashboard.css';
 
@@ -251,87 +255,81 @@ export const IssuedDocumentsPage = () => {
         )}
       </div>
 
-      {/* View Document Modal */}
+      {/* View Document Modal with Full Certificate Design */}
       <Modal
         isOpen={!!viewDoc}
         onClose={() => setViewDoc(null)}
-        title="Document Ledger Inspection"
-        maxWidth="640px"
+        title={viewDoc ? `Document Inspection: ${getDocumentTypeLabel(viewDoc.document_type || viewDoc.type)}` : 'Document Inspection'}
+        maxWidth="920px"
         footer={
-          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
             <Link
               to={`/verify?id=${viewDoc?.verification_id || viewDoc?.id}`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-outline-emerald btn-sm"
             >
-              <ExternalLink size={14} /> Public Verifier Link
+              <ExternalLink size={14} /> Open Public Verifier
             </Link>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setViewDoc(null)}
-            >
-              Close
-            </button>
+
+            <div style={{ display: 'flex', gap: '0.65rem' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!viewDoc) return;
+                  const label = getDocumentTypeLabel(viewDoc.document_type || viewDoc.type).replace(/\s+/g, '_');
+                  const name = (viewDoc.recipient_name || viewDoc.employee_name || 'Doc').replace(/\s+/g, '_');
+                  await downloadCertificateAsPdf('issued-registry-cert-node', { filename: `${label}_${name}.pdf` });
+                  addToast('PDF downloaded successfully!', 'success');
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                <Download size={14} />
+                <span>Download PDF</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => printCertificate()}
+                className="btn btn-secondary btn-sm"
+              >
+                <Printer size={14} />
+                <span>Print</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setViewDoc(null)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         }
       >
         {viewDoc && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' }}>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a' }}>
-                  {getDocumentTypeLabel(viewDoc.document_type || viewDoc.type)}
-                </h4>
-                <span className="font-mono" style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  ID: {viewDoc.verification_id || viewDoc.id}
-                </span>
-              </div>
-              <StatusBadge status={viewDoc.status || 'verified'} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', overflowX: 'auto' }}>
+              <DocumentCertificate
+                previewId="issued-registry-cert-node"
+                documentData={viewDoc}
+                company={{
+                  name: viewDoc.issuer_name || viewDoc.company_name || 'TrustDoc Technologies',
+                  tagline: 'Secure Documents | Trusted Future',
+                  address: 'TrustDoc Technologies\nPune, Maharashtra - 411001',
+                  email: 'hr@trustdoc.com',
+                  website: 'www.trustdoc.com',
+                  signatory_name: viewDoc.signatory_name || 'Rohan Deshmukh',
+                  signatory_role: viewDoc.signatory_role || 'HR Manager'
+                }}
+                isDraft={false}
+              />
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>RECIPIENT</span>
-                <strong>{viewDoc.recipient_name || viewDoc.employee_name}</strong>
-              </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>RECIPIENT EMAIL</span>
-                <strong>{viewDoc.recipient_email || viewDoc.employee_email}</strong>
-              </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>DESIGNATION</span>
-                <span>{viewDoc.designation || 'Specialist'}</span>
-              </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>ISSUE DATE</span>
-                <span>{formatDate(viewDoc.issue_date || viewDoc.created_at)}</span>
-              </div>
-            </div>
-
-            {viewDoc.transaction_hash && (
-              <div style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>BLOCKCHAIN TRANSACTION HASH</span>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.2rem' }}>
-                  <code className="font-mono" style={{ fontSize: '0.75rem', color: '#0f172a' }}>
-                    {viewDoc.transaction_hash}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(viewDoc.transaction_hash)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }}
-                  >
-                    <Copy size={11} /> Copy
-                  </button>
-                </div>
-              </div>
-            )}
 
             {viewDoc.status === 'revoked' && viewDoc.revocation_reason && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '0.85rem', borderRadius: '8px', color: '#991b1b' }}>
-                <strong>Revocation Reason:</strong>
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '0.85rem 1rem', borderRadius: '8px', color: '#991b1b', fontSize: '0.85rem' }}>
+                <strong>Revocation Notice:</strong>
                 <p style={{ margin: '0.2rem 0 0' }}>{viewDoc.revocation_reason}</p>
               </div>
             )}

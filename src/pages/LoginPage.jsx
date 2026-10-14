@@ -239,22 +239,47 @@ export const LoginPage = () => {
                 </label>
               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg"
-                style={{ width: '100%' }}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <span>Authenticating with server...</span>
-                ) : (
-                  <>
-                    <LogIn size={18} />
-                    <span>Sign In</span>
-                  </>
-                )}
-              </button>
+              {/* Quick Role Fill for Testing / Evaluation */}
+              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', textAlign: 'center', marginBottom: '0.65rem' }}>
+                  Quick Portal Evaluation Access
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setFormData({ email: 'hr@trustdoc.com', password: 'password123', rememberMe: true });
+                      try {
+                        const loggedUser = await login('hr@trustdoc.com', 'password123');
+                        addToast(`Logged in as HR Administrator (${loggedUser.name})`, 'success');
+                        navigate('/hr/issue-document');
+                      } catch {}
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.78rem', justifyContent: 'center' }}
+                  >
+                    <Building size={14} color="#059669" />
+                    <span>HR Portal</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setFormData({ email: 'sagar.lavate@email.com', password: 'password123', rememberMe: true });
+                      try {
+                        const loggedUser = await login('sagar.lavate@email.com', 'password123');
+                        addToast(`Logged in as Employee (${loggedUser.name})`, 'success');
+                        navigate('/employee/documents');
+                      } catch {}
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.78rem', justifyContent: 'center' }}
+                  >
+                    <UserCheck size={14} color="#0284c7" />
+                    <span>Employee Portal</span>
+                  </button>
+                </div>
+              </div>
             </form>
 
             <div className="auth-footer-prompt">

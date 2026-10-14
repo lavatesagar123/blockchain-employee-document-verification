@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { HRLayout } from '../layouts/HRLayout';
+import { DocumentCertificate } from '../components/DocumentCertificate';
+import { DocumentInfoPanel } from '../components/DocumentInfoPanel';
 import { documentService } from '../services/documentService';
 import { employeeService } from '../services/employeeService';
 import { useAuth } from '../context/AuthContext';
@@ -8,21 +10,22 @@ import { useToast } from '../components/Toast';
 import { FormField } from '../components/FormField';
 import { isValidEmail } from '../utils/validators';
 import { formatDate, getDocumentTypeLabel } from '../utils/formatters';
+import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
 import {
   FilePlus,
-  Building,
-  User,
-  Calendar,
-  Briefcase,
-  DollarSign,
   ShieldCheck,
   FileText,
   Eye,
   AlertCircle,
-  WifiOff,
-  ArrowRight
+  Download,
+  Printer,
+  Sparkles,
+  Maximize2,
+  CheckCircle2,
+  Briefcase,
+  Layers
 } from 'lucide-react';
-import { API_BASE_URL } from '../services/apiClient';
+import { Modal } from '../components/Modal';
 import '../styles/dashboard.css';
 
 export const DocumentIssuancePage = () => {
@@ -31,17 +34,32 @@ export const DocumentIssuancePage = () => {
   const { addToast } = useToast();
 
   const [employeesList, setEmployeesList] = useState([]);
+  const [activeTab, setActiveTab] = useState('certificate'); // 'certificate' or 'panel'
+  const [modalPreviewOpen, setModalPreviewOpen] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  // Default initial dates
+  const today = new Date().toISOString().split('T')[0];
+  const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const [formData, setFormData] = useState({
     selectedEmployeeId: '',
-    recipientName: '',
-    recipientEmail: '',
-    employeeId: '',
     documentType: 'offer_letter', // offer_letter, letter_of_intent, experience_letter, relieving_letter
-    designation: '',
-    department: '',
-    startDate: '',
-    endDate: '', // for relieving / experience
-    salaryOrStipend: '',
+    recipientName: 'Sagar Lavate',
+    recipientEmail: 'sagar.lavate@email.com',
+    recipientPhone: '+91 98765 43210',
+    employeeId: 'EMP-1092',
+    designation: 'Full Stack Developer',
+    department: 'Development',
+    employmentType: 'Full Time',
+    startDate: today,
+    endDate: today,
+    resignationDate: today,
+    salaryOrStipend: '₹ 6,00,000',
+    monthlySalary: '₹ 50,000',
+    workLocation: 'Pune, Maharashtra',
+    reportingManager: 'Rohan Deshmukh',
+    acceptanceDeadline: nextWeek,
     remarks: ''
   });
 
@@ -72,11 +90,13 @@ export const DocumentIssuancePage = () => {
       setFormData((prev) => ({
         ...prev,
         selectedEmployeeId: empId,
-        recipientName: found.name || '',
-        recipientEmail: found.email || '',
-        employeeId: found.employee_id || found.employeeId || '',
+        recipientName: found.name || prev.recipientName,
+        recipientEmail: found.email || prev.recipientEmail,
+        recipientPhone: found.phone || prev.recipientPhone,
+        employeeId: found.employee_id || found.employeeId || prev.employeeId,
         designation: found.designation || prev.designation,
-        department: found.department || prev.department
+        department: found.department || prev.department,
+        employmentType: found.employment_type || prev.employmentType
       }));
     } else {
       setFormData((prev) => ({ ...prev, selectedEmployeeId: empId }));
@@ -85,11 +105,34 @@ export const DocumentIssuancePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      // Auto-compute monthly salary from CTC if compensation changed
+      if (name === 'salaryOrStipend') {
+        const clean = value.replace(/[^0-9]/g, '');
+        if (clean) {
+          const num = parseInt(clean, 10);
+          if (!isNaN(num) && num > 0) {
+            updated.monthlySalary = `₹ ${Math.round(num / 12).toLocaleString('en-IN')}`;
+          }
+        }
+      }
+
+      return updated;
+    });
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
     if (apiError) setApiError(null);
+  };
+
+  const handleDocumentTypeChange = (type) => {
+    setFormData((prev) => ({
+      ...prev,
+      documentType: type
+    }));
   };
 
   const validate = () => {
@@ -101,7 +144,7 @@ export const DocumentIssuancePage = () => {
       errs.recipientEmail = 'Enter a valid email address';
     }
 
-    if (!formData.designation.trim()) errs.designation = 'Designation/role is required';
+    if (!formData.designation.trim()) errs.designation = 'Designation/position is required';
     if (!formData.startDate) errs.startDate = 'Effective / start date is required';
 
     if (
@@ -129,13 +172,20 @@ export const DocumentIssuancePage = () => {
       const payload = {
         recipient_name: formData.recipientName.trim(),
         recipient_email: formData.recipientEmail.trim(),
+        recipient_phone: formData.recipientPhone.trim(),
         employee_id: formData.employeeId.trim(),
         document_type: formData.documentType,
         designation: formData.designation.trim(),
         department: formData.department.trim(),
+        employment_type: formData.employmentType,
         start_date: formData.startDate,
         end_date: formData.endDate || null,
+        resignation_date: formData.resignationDate || null,
         compensation: formData.salaryOrStipend.trim(),
+        monthly_salary: formData.monthlySalary.trim(),
+        location: formData.workLocation.trim(),
+        reporting_manager: formData.reportingManager.trim(),
+        acceptance_deadline: formData.acceptanceDeadline || null,
         remarks: formData.remarks.trim()
       };
 
@@ -150,90 +200,193 @@ export const DocumentIssuancePage = () => {
     }
   };
 
-  const companyName = user?.companyName || user?.companyDetails?.name || 'Verified Organization';
+  // Export PDF handler
+  const handleDownloadPdf = async (nodeId, filenamePrefix) => {
+    setIsDownloadingPdf(true);
+    try {
+      const docLabel = getDocumentTypeLabel(formData.documentType).replace(/\s+/g, '_');
+      const recipient = formData.recipientName.replace(/\s+/g, '_') || 'Employee';
+      const filename = `${docLabel}_${recipient}.pdf`;
+      await downloadCertificateAsPdf(nodeId || 'live-issuance-certificate-node', { filename });
+      addToast('Certificate PDF generated and downloaded successfully!', 'success');
+    } catch (err) {
+      addToast('Failed to generate PDF. You can also use the Print button.', 'error');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  // Company details context / props
+  const companyDetails = {
+    name: user?.companyName || user?.companyDetails?.name || 'TrustDoc Technologies',
+    tagline: user?.companyDetails?.tagline || 'Secure Documents | Trusted Future',
+    address: user?.companyDetails?.address || 'TrustDoc Technologies\nPune, Maharashtra - 411001',
+    email: user?.companyDetails?.email || 'hr@trustdoc.com',
+    website: user?.companyDetails?.website || 'www.trustdoc.com',
+    city: formData.workLocation.split(',')[0].trim() || 'Pune',
+    signatory_name: user?.name || 'Rohan Deshmukh',
+    signatory_role: user?.designation || 'HR Manager'
+  };
 
   return (
     <HRLayout
       title="Issue Employment Document"
-      subtitle="Issue cryptographically signed credentials and anchor proof onto the blockchain ledger"
+      subtitle="Design, preview, and issue tamper-proof blockchain credentials"
     >
       <div className="animate-fade-in">
         {issuedResult ? (
-          /* Issuance Success Result Screen */
-          <div className="content-card-panel" style={{ maxWidth: '720px', margin: '0 auto', padding: '2.5rem', textAlign: 'center' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#d1fae5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-              <ShieldCheck size={36} />
-            </div>
+          /* Issuance Success Result Screen with Certificate & PDF */
+          <div className="content-card-panel" style={{ maxWidth: '960px', margin: '0 auto', padding: '2.5rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: '#d1fae5',
+                  color: '#059669',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1.25rem'
+                }}
+              >
+                <ShieldCheck size={38} />
+              </div>
 
-            <h2 style={{ fontSize: '1.75rem', color: '#0f172a', marginBottom: '0.5rem' }}>
-              Document Successfully Issued
-            </h2>
-            <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '1.75rem' }}>
-              The {getDocumentTypeLabel(formData.documentType)} has been generated and cryptographically anchored.
-            </p>
+              <h2 style={{ fontSize: '1.85rem', color: '#0f172a', marginBottom: '0.4rem', fontWeight: 800 }}>
+                Document Successfully Issued
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '0.98rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
+                The <strong>{getDocumentTypeLabel(formData.documentType)}</strong> has been cryptographically signed and registered on the verification ledger.
+              </p>
 
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', textAlign: 'left', marginBottom: '2rem', fontSize: '0.875rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>RECIPIENT</span>
-                  <strong>{formData.recipientName}</strong>
-                </div>
-                <div>
-                  <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>DOCUMENT TYPE</span>
-                  <strong>{getDocumentTypeLabel(formData.documentType)}</strong>
-                </div>
-                <div>
-                  <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>VERIFICATION ID</span>
-                  <strong className="font-mono" style={{ color: '#059669' }}>
-                    {issuedResult.verification_id || issuedResult.id || 'DOC-VFY-RECORD'}
-                  </strong>
-                </div>
-                <div>
-                  <span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block' }}>BLOCKCHAIN STATUS</span>
-                  <span className="badge badge-approved">Anchored & Verified</span>
-                </div>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPdf('issued-success-certificate-node', 'Issued_Document')}
+                  disabled={isDownloadingPdf}
+                  className="btn btn-primary"
+                >
+                  <Download size={16} />
+                  <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download as PDF'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => printCertificate()}
+                  className="btn btn-secondary"
+                >
+                  <Printer size={16} />
+                  <span>Print Certificate</span>
+                </button>
+
+                <Link to="/hr/documents" className="btn btn-secondary">
+                  <FileText size={16} />
+                  <span>View in Issued Registry</span>
+                </Link>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setIssuedResult(null);
+                    setFormData((prev) => ({
+                      ...prev,
+                      recipientName: '',
+                      recipientEmail: '',
+                      recipientPhone: '',
+                      employeeId: '',
+                      remarks: ''
+                    }));
+                  }}
+                >
+                  <FilePlus size={16} />
+                  <span>Issue Another Document</span>
+                </button>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/hr/documents" className="btn btn-primary">
-                View in Issued Registry
-              </Link>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => {
-                  setIssuedResult(null);
-                  setFormData({
-                    selectedEmployeeId: '',
-                    recipientName: '',
-                    recipientEmail: '',
-                    employeeId: '',
-                    documentType: 'offer_letter',
-                    designation: '',
-                    department: '',
-                    startDate: '',
-                    endDate: '',
-                    salaryOrStipend: '',
-                    remarks: ''
-                  });
+            {/* Issued Certificate Preview Display */}
+            <div style={{ maxWidth: '820px', margin: '0 auto' }}>
+              <DocumentCertificate
+                previewId="issued-success-certificate-node"
+                documentData={{
+                  ...formData,
+                  verification_id: issuedResult.verification_id || issuedResult.id,
+                  transaction_hash: issuedResult.transaction_hash,
+                  ref_no: issuedResult.reference_number || issuedResult.ref_no,
+                  status: 'verified'
                 }}
-              >
-                Issue Another Document
-              </button>
+                company={companyDetails}
+                isDraft={false}
+              />
             </div>
           </div>
         ) : (
-          /* Split View: Form on Left, Live Preview on Right */
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 1.2fr) minmax(320px, 1fr)', gap: '2rem', alignItems: 'start' }}>
-            {/* Form Column */}
+          /* Two-Column Split Layout: Form on Left, Live Certificate Preview on Right */
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(340px, 1fr) minmax(340px, 1.25fr)',
+              gap: '2rem',
+              alignItems: 'start'
+            }}
+          >
+            {/* Left Column: Interactive Form & Document Type Selector */}
             <div className="content-card-panel" style={{ padding: '2rem' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.35rem', color: '#0f172a' }}>
-                Document Issuance Details
-              </h3>
-              <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-                Fill in the verified employment parameters to generate the cryptographic credential.
-              </p>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <span className="badge badge-approved" style={{ marginBottom: '0.5rem', display: 'inline-flex', gap: '4px' }}>
+                  <Sparkles size={12} /> Live Certificate Builder
+                </span>
+                <h3 style={{ fontSize: '1.35rem', margin: '0 0 0.35rem', color: '#0f172a', fontWeight: 800 }}>
+                  Issue Employment Document
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>
+                  Select document type and fill in details. The certificate preview on the right updates in real-time.
+                </p>
+              </div>
+
+              {/* Document Type Selector Tabs */}
+              <div style={{ marginBottom: '1.75rem' }}>
+                <label style={{ fontSize: '0.825rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '0.6rem' }}>
+                  Select Document Type *
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  {[
+                    { id: 'offer_letter', label: 'Offer Letter', desc: 'Job offer & compensation' },
+                    { id: 'letter_of_intent', label: 'Letter of Intent (LOI)', desc: 'Intent to hire proposal' },
+                    { id: 'experience_letter', label: 'Experience Letter', desc: 'Tenure & role confirmation' },
+                    { id: 'relieving_letter', label: 'Relieving Letter', desc: 'Acceptance of separation' }
+                  ].map((tab) => {
+                    const isSelected = formData.documentType === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => handleDocumentTypeChange(tab.id)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '0.75rem 0.9rem',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #059669' : '1px solid #e2e8f0',
+                          background: isSelected ? '#ecfdf5' : '#f8fafc',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, fontSize: '0.875rem', color: isSelected ? '#065f46' : '#0f172a' }}>
+                          {tab.label}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: isSelected ? '#047857' : '#64748b', marginTop: '2px' }}>
+                          {tab.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {apiError && (
                 <div className="alert-banner alert-error animate-fade-in" style={{ marginBottom: '1.5rem' }}>
@@ -249,7 +402,7 @@ export const DocumentIssuancePage = () => {
                 {/* Employee Quick Select */}
                 {employeesList.length > 0 && (
                   <div className="form-group">
-                    <label htmlFor="selectedEmployeeId">Select Registered Employee (Optional)</label>
+                    <label htmlFor="selectedEmployeeId">Choose Registered Employee (Optional)</label>
                     <select
                       id="selectedEmployeeId"
                       name="selectedEmployeeId"
@@ -257,7 +410,7 @@ export const DocumentIssuancePage = () => {
                       value={formData.selectedEmployeeId}
                       onChange={handleSelectEmployee}
                     >
-                      <option value="">-- Choose from Directory or Enter Below --</option>
+                      <option value="">-- Manual Entry or Select from Directory --</option>
                       {employeesList.map((emp) => (
                         <option key={emp.id || emp.employee_id} value={emp.id || emp.employee_id}>
                           {emp.name} ({emp.designation || emp.email})
@@ -267,31 +420,12 @@ export const DocumentIssuancePage = () => {
                   </div>
                 )}
 
-                {/* Document Type Selection */}
-                <div className="form-group">
-                  <label htmlFor="documentType">
-                    <span>Document Type</span>
-                    <span className="required-asterisk">*</span>
-                  </label>
-                  <select
-                    id="documentType"
-                    name="documentType"
-                    className="form-control form-select"
-                    value={formData.documentType}
-                    onChange={handleChange}
-                  >
-                    <option value="offer_letter">Offer Letter</option>
-                    <option value="letter_of_intent">Letter of Intent (LOI)</option>
-                    <option value="experience_letter">Experience Letter</option>
-                    <option value="relieving_letter">Relieving Letter</option>
-                  </select>
-                </div>
-
+                {/* Recipient Details */}
                 <div className="form-grid-2col">
                   <FormField
                     label="Recipient Full Name"
                     name="recipientName"
-                    placeholder="e.g. Johnathan Smith"
+                    placeholder="e.g. Sagar Lavate"
                     value={formData.recipientName}
                     onChange={handleChange}
                     error={errors.recipientName}
@@ -303,7 +437,7 @@ export const DocumentIssuancePage = () => {
                     label="Recipient Email"
                     name="recipientEmail"
                     type="email"
-                    placeholder="john@example.com"
+                    placeholder="sagar.lavate@email.com"
                     value={formData.recipientEmail}
                     onChange={handleChange}
                     error={errors.recipientEmail}
@@ -314,50 +448,87 @@ export const DocumentIssuancePage = () => {
 
                 <div className="form-grid-2col">
                   <FormField
-                    label="Employee ID / Roll"
-                    name="employeeId"
-                    placeholder="e.g. EMP-1092"
-                    value={formData.employeeId}
+                    label="Phone Number"
+                    name="recipientPhone"
+                    placeholder="e.g. +91 98765 43210"
+                    value={formData.recipientPhone}
                     onChange={handleChange}
-                    error={errors.employeeId}
                     disabled={submitting}
                   />
 
                   <FormField
+                    label="Employee ID"
+                    name="employeeId"
+                    placeholder="e.g. EMP-1092"
+                    value={formData.employeeId}
+                    onChange={handleChange}
+                    disabled={submitting}
+                  />
+                </div>
+
+                {/* Role and Department */}
+                <div className="form-grid-2col">
+                  <FormField
                     label="Designation / Position"
                     name="designation"
-                    placeholder="e.g. Lead Software Engineer"
+                    placeholder="e.g. Full Stack Developer"
                     value={formData.designation}
                     onChange={handleChange}
                     error={errors.designation}
                     required
                     disabled={submitting}
                   />
-                </div>
 
-                <div className="form-grid-2col">
                   <FormField
                     label="Department"
                     name="department"
-                    placeholder="e.g. Core Infrastructure"
+                    placeholder="e.g. Development"
                     value={formData.department}
                     onChange={handleChange}
                     disabled={submitting}
                   />
+                </div>
+
+                <div className="form-grid-2col">
+                  <div className="form-group">
+                    <label htmlFor="employmentType">
+                      <span>Employment Type</span>
+                    </label>
+                    <select
+                      id="employmentType"
+                      name="employmentType"
+                      className="form-control form-select"
+                      value={formData.employmentType}
+                      onChange={handleChange}
+                      disabled={submitting}
+                    >
+                      <option value="Full Time">Full Time</option>
+                      <option value="Part Time">Part Time</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Internship">Internship</option>
+                    </select>
+                  </div>
 
                   <FormField
-                    label={formData.documentType === 'offer_letter' ? 'Annual Compensation / CTC' : 'Compensation (Optional)'}
-                    name="salaryOrStipend"
-                    placeholder="e.g. $110,000 / year"
-                    value={formData.salaryOrStipend}
+                    label="Work Location"
+                    name="workLocation"
+                    placeholder="e.g. Pune, Maharashtra"
+                    value={formData.workLocation}
                     onChange={handleChange}
                     disabled={submitting}
                   />
                 </div>
 
+                {/* Dates based on Document Type */}
                 <div className="form-grid-2col">
                   <FormField
-                    label={formData.documentType === 'offer_letter' ? 'Joining Date' : 'Employment Start Date'}
+                    label={
+                      formData.documentType === 'offer_letter'
+                        ? 'Joining Date'
+                        : formData.documentType === 'letter_of_intent'
+                        ? 'Proposed Joining Date'
+                        : 'Employment Start Date'
+                    }
                     name="startDate"
                     type="date"
                     value={formData.startDate}
@@ -367,7 +538,8 @@ export const DocumentIssuancePage = () => {
                     disabled={submitting}
                   />
 
-                  {(formData.documentType === 'experience_letter' || formData.documentType === 'relieving_letter') && (
+                  {(formData.documentType === 'experience_letter' ||
+                    formData.documentType === 'relieving_letter') && (
                     <FormField
                       label="Relieving / Last Working Date"
                       name="endDate"
@@ -379,14 +551,65 @@ export const DocumentIssuancePage = () => {
                       disabled={submitting}
                     />
                   )}
+
+                  {(formData.documentType === 'offer_letter' ||
+                    formData.documentType === 'letter_of_intent') && (
+                    <FormField
+                      label={
+                        formData.documentType === 'offer_letter'
+                          ? 'Acceptance Deadline'
+                          : 'Offer Validity Date'
+                      }
+                      name="acceptanceDeadline"
+                      type="date"
+                      value={formData.acceptanceDeadline}
+                      onChange={handleChange}
+                      disabled={submitting}
+                    />
+                  )}
                 </div>
 
+                {/* Compensation Fields for Offer & LOI */}
+                {(formData.documentType === 'offer_letter' ||
+                  formData.documentType === 'letter_of_intent') && (
+                  <div className="form-grid-2col">
+                    <FormField
+                      label="Annual CTC"
+                      name="salaryOrStipend"
+                      placeholder="e.g. ₹ 6,00,000"
+                      value={formData.salaryOrStipend}
+                      onChange={handleChange}
+                      disabled={submitting}
+                    />
+
+                    <FormField
+                      label="Monthly Salary (Estimated)"
+                      name="monthlySalary"
+                      placeholder="e.g. ₹ 50,000"
+                      value={formData.monthlySalary}
+                      onChange={handleChange}
+                      disabled={submitting}
+                    />
+                  </div>
+                )}
+
+                {/* Reporting Manager */}
+                <FormField
+                  label="Reporting Manager / Contact Person"
+                  name="reportingManager"
+                  placeholder="e.g. Rohan Deshmukh"
+                  value={formData.reportingManager}
+                  onChange={handleChange}
+                  disabled={submitting}
+                />
+
+                {/* Remarks */}
                 <FormField
                   label="Official Remarks / Special Clauses (Optional)"
                   name="remarks"
                   type="textarea"
                   rows={2}
-                  placeholder="Additional terms, performance commendations, or reason for leaving..."
+                  placeholder="Additional terms, commendations, or clearance details..."
                   value={formData.remarks}
                   onChange={handleChange}
                   disabled={submitting}
@@ -410,149 +633,152 @@ export const DocumentIssuancePage = () => {
               </form>
             </div>
 
-            {/* Live Document Preview Layout */}
+            {/* Right Column: Live Certificate Preview Toolbar & Preview */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Live Document Preview
-                </span>
-                <span className="badge badge-approved" style={{ fontSize: '0.72rem' }}>
-                  Format: Official Certificate
-                </span>
-              </div>
-
+              {/* Preview Action Header */}
               <div
                 style={{
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '12px',
-                  boxShadow: 'var(--shadow-lg)',
-                  padding: '2.5rem',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  minHeight: '520px'
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '1rem',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem'
                 }}
               >
-                {/* Watermark Seal */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%) rotate(-25deg)',
-                    color: 'rgba(16, 185, 129, 0.05)',
-                    fontSize: '4.5rem',
-                    fontWeight: 900,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                    textAlign: 'center',
-                    lineHeight: 1
-                  }}
-                >
-                  TRUSTDOC<br />VERIFIED
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('certificate')}
+                    className={`btn btn-sm ${activeTab === 'certificate' ? 'btn-primary' : 'btn-secondary'}`}
+                  >
+                    <FileText size={14} />
+                    <span>Certificate View</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('panel')}
+                    className={`btn btn-sm ${activeTab === 'panel' ? 'btn-primary' : 'btn-secondary'}`}
+                  >
+                    <Layers size={14} />
+                    <span>Details & Ledger</span>
+                  </button>
                 </div>
 
-                {/* Company Header */}
-                <div style={{ borderBottom: '2px solid #0f172a', paddingBottom: '1.25rem', marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h2 style={{ fontSize: '1.4rem', color: '#0f172a', margin: 0, fontWeight: 800 }}>
-                      {companyName}
-                    </h2>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                      Official Corporate Credential
-                    </span>
-                  </div>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#d1fae5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ShieldCheck size={24} />
-                  </div>
-                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setModalPreviewOpen(true)}
+                    className="btn btn-secondary btn-sm"
+                    title="Fullscreen Preview"
+                  >
+                    <Maximize2 size={14} />
+                    <span>Fullscreen</span>
+                  </button>
 
-                {/* Document Title */}
-                <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.05em', margin: '0 0 0.35rem' }}>
-                    {getDocumentTypeLabel(formData.documentType)}
-                  </h3>
-                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                    Date of Issue: {formatDate(new Date())}
-                  </div>
-                </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadPdf('live-issuance-certificate-node', 'Certificate_Draft')}
+                    disabled={isDownloadingPdf}
+                    className="btn btn-secondary btn-sm"
+                    title="Download as PDF"
+                  >
+                    <Download size={14} />
+                    <span>PDF</span>
+                  </button>
 
-                {/* Recipient Greeting & Body */}
-                <div style={{ fontSize: '0.875rem', lineHeight: '1.7', color: '#334155', marginBottom: '2rem' }}>
-                  <p>
-                    This is an official credential issued to{' '}
-                    <strong>{formData.recipientName || '[Recipient Name]'}</strong>
-                    {formData.employeeId ? ` (ID: ${formData.employeeId})` : ''}.
-                  </p>
-
-                  <p>
-                    {formData.documentType === 'offer_letter' && (
-                      <>
-                        We are pleased to offer you the position of{' '}
-                        <strong>{formData.designation || '[Designation]'}</strong>
-                        {formData.department ? ` in the ${formData.department} department` : ''}.
-                        Your employment commences on{' '}
-                        <strong>{formData.startDate ? formatDate(formData.startDate) : '[Joining Date]'}</strong>
-                        {formData.salaryOrStipend ? ` with an annual compensation of ${formData.salaryOrStipend}` : ''}.
-                      </>
-                    )}
-
-                    {formData.documentType === 'letter_of_intent' && (
-                      <>
-                        This Letter of Intent confirms our mutual intent to engage you as{' '}
-                        <strong>{formData.designation || '[Designation]'}</strong> starting on{' '}
-                        <strong>{formData.startDate ? formatDate(formData.startDate) : '[Start Date]'}</strong>.
-                      </>
-                    )}
-
-                    {formData.documentType === 'experience_letter' && (
-                      <>
-                        This certifies that{' '}
-                        <strong>{formData.recipientName || '[Recipient Name]'}</strong> was employed
-                        with {companyName} as{' '}
-                        <strong>{formData.designation || '[Designation]'}</strong> from{' '}
-                        <strong>{formData.startDate ? formatDate(formData.startDate) : '[Start Date]'}</strong> to{' '}
-                        <strong>{formData.endDate ? formatDate(formData.endDate) : '[End Date]'}</strong>.
-                      </>
-                    )}
-
-                    {formData.documentType === 'relieving_letter' && (
-                      <>
-                        This certifies that{' '}
-                        <strong>{formData.recipientName || '[Recipient Name]'}</strong> has been relieved of
-                        duties as <strong>{formData.designation || '[Designation]'}</strong> effective{' '}
-                        <strong>{formData.endDate ? formatDate(formData.endDate) : '[Last Working Day]'}</strong>.
-                      </>
-                    )}
-                  </p>
-
-                  {formData.remarks && (
-                    <p style={{ fontStyle: 'italic', color: '#64748b', borderLeft: '3px solid #cbd5e1', paddingLeft: '0.75rem' }}>
-                      "{formData.remarks}"
-                    </p>
-                  )}
-                </div>
-
-                {/* Sign-off & Seal */}
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '0.8rem' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{user?.name || 'HR Administrator'}</div>
-                    <div style={{ color: '#64748b' }}>Authorized Signatory, {companyName}</div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontWeight: 600 }}>
-                      <ShieldCheck size={16} /> Blockchain Anchored
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#94a3b8' }}>
-                      SHA-256 Digest upon submit
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => printCertificate()}
+                    className="btn btn-secondary btn-sm"
+                    title="Print Document"
+                  >
+                    <Printer size={14} />
+                    <span>Print</span>
+                  </button>
                 </div>
               </div>
+
+              {/* View Container */}
+              {activeTab === 'certificate' ? (
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    overflowX: 'auto'
+                  }}
+                >
+                  <DocumentCertificate
+                    previewId="live-issuance-certificate-node"
+                    documentData={formData}
+                    company={companyDetails}
+                    isDraft={true}
+                  />
+                </div>
+              ) : (
+                <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+                  <DocumentInfoPanel
+                    documentData={formData}
+                    isDraft={true}
+                    onScanClick={() => addToast('This is a draft preview. Scan will be active upon issuance.', 'info')}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
+
+        {/* Modal for Fullscreen Preview */}
+        <Modal
+          isOpen={modalPreviewOpen}
+          onClose={() => setModalPreviewOpen(false)}
+          title={`Preview: ${getDocumentTypeLabel(formData.documentType)}`}
+          maxWidth="920px"
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Previewing official green-and-white certificate template
+              </div>
+              <div style={{ display: 'flex', gap: '0.65rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPdf('modal-issuance-certificate-node', 'Certificate_Preview')}
+                  disabled={isDownloadingPdf}
+                  className="btn btn-primary btn-sm"
+                >
+                  <Download size={14} />
+                  <span>Download PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => printCertificate()}
+                  className="btn btn-secondary btn-sm"
+                >
+                  <Printer size={14} />
+                  <span>Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalPreviewOpen(false)}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <DocumentCertificate
+              previewId="modal-issuance-certificate-node"
+              documentData={formData}
+              company={companyDetails}
+              isDraft={true}
+            />
+          </div>
+        </Modal>
       </div>
     </HRLayout>
   );
