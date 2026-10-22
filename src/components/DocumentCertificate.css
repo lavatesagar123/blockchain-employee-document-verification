@@ -14,18 +14,19 @@
 
 .cert-card {
   position: relative;
-  width: 100%;
-  max-width: 840px;
-  min-height: 1160px;
+  width: 800px;
+  min-width: 800px;
+  min-height: 1130px;
   background-color: #ffffff;
   color: #1e293b;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.05);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   overflow: hidden;
   box-sizing: border-box;
   margin: 0 auto;
   user-select: text;
+  flex-shrink: 0;
 }
 
 /* Corner Ribbon Ornaments (Top-Left & Bottom-Right) */
@@ -38,58 +39,35 @@
 .cert-corner-top-left {
   top: 0;
   left: 0;
-  width: 155px;
-  height: 155px;
+  width: 105px;
+  height: 105px;
 }
 
 .cert-corner-bottom-right {
   bottom: 0;
   right: 0;
-  width: 155px;
-  height: 155px;
+  width: 105px;
+  height: 105px;
 }
 
 /* Inner Decorative Green Border Frame */
 .cert-inner-frame {
   position: absolute;
-  top: 22px;
-  left: 22px;
-  right: 22px;
-  bottom: 22px;
-  border: 1.5px solid #065f46;
-  border-radius: 10px;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  border: 1.5px solid #047857;
+  border-radius: 8px;
   pointer-events: none;
   z-index: 1;
-}
-
-/* Decorative corner notches on inner frame */
-.cert-inner-frame::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 16px;
-  height: 16px;
-  border-top: 3px solid #047857;
-  border-right: 3px solid #047857;
-}
-
-.cert-inner-frame::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: -4px;
-  width: 16px;
-  height: 16px;
-  border-bottom: 3px solid #047857;
-  border-left: 3px solid #047857;
 }
 
 /* Certificate Content Wrapper */
 .cert-content {
   position: relative;
   z-index: 3;
-  padding: 44px 50px 38px 50px;
+  padding: 48px 56px 36px 56px;
   display: flex;
   flex-direction: column;
   min-height: 1160px;
@@ -101,8 +79,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 26px;
-  padding-left: 36px; /* Offset to clear top-left ribbon */
+  margin-bottom: 22px;
 }
 
 .cert-branding {
@@ -129,6 +106,7 @@
   letter-spacing: -0.02em;
   line-height: 1.15;
   margin: 0;
+  white-space: nowrap;
 }
 
 .cert-company-tagline {
@@ -168,42 +146,42 @@
 /* Document Title Section */
 .cert-title-section {
   text-align: center;
-  margin: 10px 0 24px;
+  margin: 10px 0 20px;
 }
 
 .cert-title-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 22px;
 }
 
 .cert-title-rule {
   flex: 1;
-  max-width: 140px;
+  max-width: 130px;
   height: 1.5px;
-  background: linear-gradient(90deg, rgba(6, 95, 70, 0.1), #065f46);
+  background-color: #047857;
 }
 
 .cert-title-rule.rule-right {
-  background: linear-gradient(90deg, #065f46, rgba(6, 95, 70, 0.1));
+  background-color: #047857;
 }
 
 .cert-doc-title {
-  font-family: 'Playfair Display', 'Cinzel', Georgia, serif;
-  font-size: 2.25rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #064e3b;
+  color: #045c43;
   letter-spacing: -0.01em;
   margin: 0;
   line-height: 1.1;
 }
 
 .cert-doc-badge {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #065f46;
-  letter-spacing: 0.28em;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   margin-top: 6px;
 }
@@ -244,11 +222,11 @@
 
 /* Body Paragraphs */
 .cert-body-p {
-  font-size: 0.875rem;
-  line-height: 1.68;
+  font-size: 0.88rem;
+  line-height: 1.65;
   color: #334155;
-  margin-bottom: 18px;
-  text-align: justify;
+  margin-bottom: 16px;
+  text-align: left;
 }
 
 .cert-body-p strong {
@@ -258,11 +236,11 @@
 
 /* Structured Key-Value Details Box */
 .cert-details-box {
-  background-color: #f0fdf4;
-  border: 1px solid #a7f3d0;
+  background-color: #f0faf6;
+  border: 1px solid #bbf7d0;
   border-radius: 8px;
-  padding: 14px 20px;
-  margin: 18px 0 20px;
+  padding: 14px 22px;
+  margin: 16px 0 18px;
 }
 
 .cert-details-grid {
@@ -278,12 +256,12 @@
 }
 
 .cert-details-col.left-col {
-  padding-right: 18px;
-  border-right: 1px solid #d1fae5;
+  padding-right: 20px;
+  border-right: 1px solid #bbf7d0;
 }
 
 .cert-details-col.right-col {
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .cert-detail-row {
@@ -294,14 +272,14 @@
 }
 
 .cert-detail-label {
-  width: 140px;
+  width: 130px;
   flex-shrink: 0;
   color: #064e3b;
   font-weight: 600;
 }
 
 .cert-detail-colon {
-  margin-right: 10px;
+  margin: 0 10px;
   color: #065f46;
   font-weight: 600;
 }
@@ -310,7 +288,7 @@
   color: #0f172a;
   font-weight: 600;
   flex: 1;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
 /* Remarks / Special Notes Box */
@@ -383,7 +361,7 @@
 .cert-seal-container {
   width: 104px;
   height: 104px;
-  transform: rotate(-6deg);
+  transform: rotate(-2deg);
   transition: transform 0.3s ease;
 }
 
@@ -397,17 +375,16 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-right: 20px; /* Offset from bottom-right ribbon */
+  padding-right: 12px;
 }
 
 .cert-qr-box {
-  width: 90px;
-  height: 90px;
-  background: #ffffff;
-  padding: 4px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  width: 82px;
+  height: 82px;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -438,13 +415,35 @@
   color: #475569;
   flex-wrap: wrap;
   gap: 12px;
-  padding-right: 48px; /* Offset to clear bottom ribbon */
+  padding-right: 24px;
 }
 
 .cert-footer-item {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.cert-footer-address {
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cert-footer-address-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.cert-footer-company {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.cert-footer-city {
+  color: #64748b;
+  font-size: 0.68rem;
 }
 
 .cert-footer-icon {
@@ -460,7 +459,7 @@
   transform: translate(-50%, -50%) rotate(-30deg);
   font-size: 4.8rem;
   font-weight: 900;
-  color: rgba(16, 185, 129, 0.045);
+  color: rgba(16, 185, 129, 0.02);
   pointer-events: none;
   user-select: none;
   text-align: center;

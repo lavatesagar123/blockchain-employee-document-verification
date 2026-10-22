@@ -21,7 +21,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { API_BASE_URL } from '../services/apiClient';
-import '../styles/dashboard.css';
+import '../styles/landing.css';
+import '../styles/verification.css';
 
 export const PublicVerificationPage = () => {
   const [searchParams] = useSearchParams();
@@ -34,7 +35,7 @@ export const PublicVerificationPage = () => {
   const [result, setResult] = useState(null);
   const [errorState, setErrorState] = useState(null);
 
-  // Auto-fill from ?id= query param
+  // Auto-fill from ?id= or ?verificationId= query param
   useEffect(() => {
     const idParam = searchParams.get('id') || searchParams.get('verificationId');
     if (idParam) {
@@ -114,157 +115,134 @@ export const PublicVerificationPage = () => {
   };
 
   return (
-    <PublicLayout>
-      <div className="container" style={{ padding: '3.5rem 1rem 5rem' }}>
+    <PublicLayout hideFooter={true}>
+      <div className="verify-page-root">
+        {/* Soft Mint Ambient Glow Elements matching Landing Page */}
+        <div className="home-ambient-glow-left" />
+        <div className="home-ambient-glow-right" />
+
         {/* Page Header */}
-        <div style={{ maxWidth: '780px', margin: '0 auto 2.5rem', textAlign: 'center' }}>
-          <div className="hero-badge-tag" style={{ margin: '0 auto 1rem', display: 'inline-flex' }}>
-            <ShieldCheck size={16} />
-            <span>Public Trust Verification Engine</span>
+        <div className="verify-header-section">
+          <div className="verify-pill-badge">
+            <ShieldCheck size={14} strokeWidth={2.4} />
+            <span>Public Verification Portal</span>
           </div>
 
-          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
-            Verify Document Authenticity
+          <h1 className="verify-headline">
+            <span className="headline-navy">Verify Document </span>
+            <span className="headline-emerald">Authenticity</span>
           </h1>
-          <p style={{ color: '#64748b', fontSize: '1.05rem', lineHeight: 1.6 }}>
+          <p className="verify-subtext">
             Cryptographically audit the authenticity, issuing authority, and tamper status of any
-            employment certificate or credential anchored to the distributed ledger.
+            employment credential on the blockchain ledger.
           </p>
         </div>
 
-        {/* Verification Input Box */}
-        <div className="content-card-panel" style={{ maxWidth: '780px', margin: '0 auto 2.5rem', padding: '2rem' }}>
+        {/* Verification Input Card */}
+        <div className="verify-form-card">
           <form onSubmit={handleVerify}>
-            <div className="form-group">
-              <label htmlFor="verificationId" style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>
-                Document Verification ID / Blockchain Hash *
-              </label>
-              <div className="input-with-icon">
-                <Hash className="input-icon-left" size={18} />
+            <div>
+              <div className="verify-field-label">
+                <span>Document Verification ID / Hash *</span>
+              </div>
+              <div className="verify-input-wrap">
+                <Hash className="verify-input-icon" size={17} />
                 <input
                   id="verificationId"
                   type="text"
-                  className="form-control input-padded"
-                  placeholder="e.g. DOC-VFY-884920 or 0x7f9a8b1c..."
+                  className="verify-text-input"
+                  placeholder="e.g. VC-2025-001 or 0x7f9a8b1c..."
                   value={verificationId}
                   onChange={(e) => setVerificationId(e.target.value)}
                   disabled={verifying}
-                  style={{ fontSize: '0.95rem', height: '46px' }}
+                  autoComplete="off"
                 />
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.35rem' }}>
-                Located at the bottom of the issued certificate or QR code URL parameter.
+              <div className="verify-field-hint">
+                Located at the bottom of the issued certificate or QR code URL.
               </div>
             </div>
 
             {/* Optional Document Upload for Integrity Check */}
-            <div className="form-group" style={{ marginTop: '1.5rem' }}>
-              <label htmlFor="doc-upload" style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>Optional File Integrity Check (SHA-256 Checksum)</span>
-                <span className="badge badge-neutral" style={{ fontSize: '0.7rem' }}>Optional</span>
-              </label>
+            <div
+              className={`verify-upload-box ${uploadedFile ? 'verify-upload-active' : ''}`}
+              onClick={() => document.getElementById('doc-upload')?.click()}
+            >
+              <input
+                id="doc-upload"
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
 
-              <div
-                style={{
-                  border: '2px dashed #cbd5e1',
-                  borderRadius: '10px',
-                  padding: '1.25rem',
-                  textAlign: 'center',
-                  background: uploadedFile ? '#f0fdf4' : '#f8fafc',
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer'
-                }}
-                onClick={() => document.getElementById('doc-upload')?.click()}
-              >
-                <input
-                  id="doc-upload"
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                />
+              <Upload size={18} style={{ color: uploadedFile ? '#059669' : '#94a3b8' }} />
 
-                <Upload size={24} style={{ color: uploadedFile ? '#10b981' : '#94a3b8', margin: '0 auto 0.5rem' }} />
-
-                {uploadedFile ? (
-                  <div>
-                    <strong style={{ color: '#065f46', fontSize: '0.9rem' }}>{uploadedFile.name}</strong>
-                    <div style={{ fontSize: '0.78rem', color: '#047857', marginTop: '0.2rem' }}>
-                      Size: {(uploadedFile.size / 1024).toFixed(1)} KB • SHA-256: {fileSha256.substring(0, 16)}...
-                    </div>
+              {uploadedFile ? (
+                <div style={{ marginTop: '0.2rem' }}>
+                  <strong style={{ color: '#065f46', fontSize: '0.8rem' }}>{uploadedFile.name}</strong>
+                  <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '1px' }}>
+                    {(uploadedFile.size / 1024).toFixed(1)} KB • SHA-256: {fileSha256.substring(0, 14)}...
                   </div>
-                ) : (
-                  <div>
-                    <span style={{ fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
-                      Upload document PDF or image to compare cryptographic digest
-                    </span>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-                      File is digested securely inside your browser
-                    </div>
+                </div>
+              ) : (
+                <>
+                  <div className="verify-upload-title">
+                    Optional File Integrity Check (SHA-256)
                   </div>
-                )}
-              </div>
+                  <div className="verify-upload-sub">
+                    Upload PDF or image to compare cryptographic digest
+                  </div>
+                </>
+              )}
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%', marginTop: '1.75rem' }}
+              className="verify-submit-btn"
               disabled={verifying}
             >
               {verifying ? (
                 <>
-                  <RefreshCw size={18} className="animate-spin" />
+                  <RefreshCw size={16} className="animate-spin" />
                   <span>Querying Verification Ledger...</span>
                 </>
               ) : (
                 <>
-                  <Search size={18} />
-                  <span>Verify Credential Authenticity</span>
+                  <Search size={16} strokeWidth={2.2} />
+                  <span>Verify Document</span>
                 </>
               )}
             </button>
           </form>
         </div>
 
-        {/* Verification Error States (Honest Status Display) */}
+        {/* Verification Error States */}
         {errorState && (
-          <div className="content-card-panel animate-fade-in" style={{ maxWidth: '780px', margin: '0 auto', padding: '2rem', borderLeft: '4px solid #ef4444' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {errorState.type === 'SERVICE_UNAVAILABLE' ? <WifiOff size={22} /> : <XCircle size={22} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.25rem', color: '#991b1b', margin: '0 0 0.35rem' }}>
-                  {errorState.title}
-                </h3>
-                <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
-                  {errorState.message}
-                </p>
+          <div className="verify-error-card animate-fade-in">
+            <div className="verify-error-icon">
+              {errorState.type === 'SERVICE_UNAVAILABLE' ? <WifiOff size={18} /> : <XCircle size={18} />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 className="verify-error-title">{errorState.title}</h3>
+              <p className="verify-error-msg">{errorState.message}</p>
 
-                {errorState.type === 'SERVICE_UNAVAILABLE' && (
-                  <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
-                    <div style={{ fontWeight: 600, color: '#334155', marginBottom: '0.2rem' }}>
-                      Integration Notice:
-                    </div>
-                    <div>
-                      The frontend does not simulate successful verifications without a real backend response.
-                      Please ensure the Django verification endpoint <code>GET /api/verification/&#123;id&#125;/</code> is online.
-                    </div>
-                  </div>
-                )}
-              </div>
+              {errorState.type === 'SERVICE_UNAVAILABLE' && (
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.72rem', color: '#64748b' }}>
+                  Backend endpoint: <code>{API_BASE_URL}/api/verification/&#123;id&#125;/</code>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Verification Success / Result Card (Rendered ONLY from real API data) */}
+        {/* Verification Success / Result Card */}
         {result && (
-          <div className="content-card-panel animate-fade-in" style={{ maxWidth: '780px', margin: '0 auto', overflow: 'hidden' }}>
+          <div className="verify-result-panel animate-fade-in">
             {/* Header banner based on status */}
             <div
+              className="verify-result-header"
               style={{
-                padding: '1.5rem',
                 background:
                   result.status === 'verified'
                     ? '#f0fdf4'
@@ -272,23 +250,16 @@ export const PublicVerificationPage = () => {
                     ? '#fef2f2'
                     : result.status === 'modified'
                     ? '#fff1f2'
-                    : '#f8fafc',
-                borderBottom: '1px solid #e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '1rem'
+                    : '#f8fafc'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <div
                   style={{
-                    width: '46px',
-                    height: '46px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
-                    background:
-                      result.status === 'verified' ? '#d1fae5' : '#fee2e2',
+                    background: result.status === 'verified' ? '#d1fae5' : '#fee2e2',
                     color: result.status === 'verified' ? '#059669' : '#dc2626',
                     display: 'flex',
                     alignItems: 'center',
@@ -296,15 +267,15 @@ export const PublicVerificationPage = () => {
                   }}
                 >
                   {result.status === 'verified' ? (
-                    <ShieldCheck size={26} />
+                    <ShieldCheck size={20} strokeWidth={2.4} />
                   ) : result.status === 'revoked' ? (
-                    <AlertTriangle size={26} />
+                    <AlertTriangle size={20} />
                   ) : (
-                    <ShieldAlert size={26} />
+                    <ShieldAlert size={20} />
                   )}
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
                     {result.status === 'verified'
                       ? 'Authentic Credential Verified'
                       : result.status === 'revoked'
@@ -313,8 +284,8 @@ export const PublicVerificationPage = () => {
                       ? 'Document Content Tampered / Modified'
                       : 'Verification Status: ' + result.status}
                   </h3>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                    Queried from TrustDoc Distributed Ledger
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    TrustDoc Distributed Ledger Verification
                   </div>
                 </div>
               </div>
@@ -323,112 +294,93 @@ export const PublicVerificationPage = () => {
             </div>
 
             {/* Document Details Grid */}
-            <div style={{ padding: '2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '1.75rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>
-                    ISSUING ORGANIZATION
-                  </span>
-                  <strong style={{ fontSize: '1rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
-                    <Building size={16} color="#10b981" />
-                    {result.issuer_name || result.issuer || result.company_name || 'Verified Issuer'}
-                  </strong>
-                  {result.issuer_reg_no && (
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                      CIN: {result.issuer_reg_no}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>
-                    DOCUMENT TYPE
-                  </span>
-                  <strong style={{ fontSize: '1rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
-                    <FileText size={16} color="#0ea5e9" />
-                    {getDocumentTypeLabel(result.document_type || result.type)}
-                  </strong>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>
-                    RECIPIENT / EMPLOYEE
-                  </span>
-                  <strong style={{ fontSize: '1rem', color: '#0f172a', marginTop: '0.2rem', display: 'block' }}>
-                    {result.recipient_name || result.employee_name || 'Authorized Holder'}
-                  </strong>
-                  {result.employee_id && (
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                      ID: {result.employee_id}
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>
-                    ISSUE DATE
-                  </span>
-                  <strong style={{ fontSize: '1rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
-                    <Calendar size={16} color="#64748b" />
-                    {formatDate(result.issue_date || result.created_at)}
-                  </strong>
-                </div>
+            <div className="verify-result-grid">
+              <div className="verify-grid-item">
+                <label>Issuing Organization</label>
+                <strong>
+                  <Building size={14} color="#059669" />
+                  <span>{result.issuer_name || result.issuer || result.company_name || 'Verified Issuer'}</span>
+                </strong>
+                {result.issuer_reg_no && (
+                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>CIN: {result.issuer_reg_no}</span>
+                )}
               </div>
 
-              {/* Cryptographic Ledger Block */}
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1.25rem', fontSize: '0.85rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                  <strong style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Hash size={15} color="#059669" />
-                    Cryptographic Proof Metadata
-                  </strong>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(result.transaction_hash || result.hash || result.verification_id)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                  >
-                    <Copy size={12} /> Copy Hash
-                  </button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#475569' }}>
-                  <div>
-                    <span style={{ color: '#94a3b8' }}>verificationId: </span>
-                    <strong style={{ color: '#0f172a' }}>{result.verification_id || verificationId}</strong>
-                  </div>
-                  {result.transaction_hash && (
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>transactionHash: </span>
-                      <span>{result.transaction_hash}</span>
-                    </div>
-                  )}
-                  {result.file_hash && (
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>sha256Digest: </span>
-                      <span>{result.file_hash}</span>
-                    </div>
-                  )}
-                  {result.block_number && (
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>blockHeight: </span>
-                      <span>#{result.block_number}</span>
-                    </div>
-                  )}
-                </div>
+              <div className="verify-grid-item">
+                <label>Document Type</label>
+                <strong>
+                  <FileText size={14} color="#0ea5e9" />
+                  <span>{getDocumentTypeLabel(result.document_type || result.type)}</span>
+                </strong>
               </div>
 
-              {/* Revocation remarks if revoked */}
-              {result.status === 'revoked' && result.revocation_reason && (
-                <div style={{ marginTop: '1.25rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '1rem', color: '#991b1b', fontSize: '0.85rem' }}>
-                  <strong>Revocation Reason:</strong>
-                  <p style={{ margin: '0.25rem 0 0' }}>{result.revocation_reason}</p>
-                </div>
-              )}
+              <div className="verify-grid-item">
+                <label>Recipient / Employee</label>
+                <strong>
+                  <span>{result.recipient_name || result.employee_name || 'Authorized Holder'}</span>
+                </strong>
+                {result.employee_id && (
+                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>ID: {result.employee_id}</span>
+                )}
+              </div>
+
+              <div className="verify-grid-item">
+                <label>Issue Date</label>
+                <strong>
+                  <Calendar size={14} color="#64748b" />
+                  <span>{formatDate(result.issue_date || result.created_at)}</span>
+                </strong>
+              </div>
             </div>
+
+            {/* Cryptographic Ledger Block */}
+            <div className="verify-proof-box">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <strong style={{ color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem' }}>
+                  <Hash size={13} color="#059669" />
+                  Cryptographic Proof Metadata
+                </strong>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(result.transaction_hash || result.hash || result.verification_id)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}
+                >
+                  <Copy size={11} /> Copy Hash
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.25rem', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#475569' }}>
+                <div>
+                  <span style={{ color: '#94a3b8' }}>verificationId: </span>
+                  <strong style={{ color: '#0f172a' }}>{result.verification_id || verificationId}</strong>
+                </div>
+                {result.transaction_hash && (
+                  <div>
+                    <span style={{ color: '#94a3b8' }}>txHash: </span>
+                    <span>{result.transaction_hash}</span>
+                  </div>
+                )}
+                {result.file_hash && (
+                  <div>
+                    <span style={{ color: '#94a3b8' }}>sha256: </span>
+                    <span>{result.file_hash}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Revocation remarks if revoked */}
+            {result.status === 'revoked' && result.revocation_reason && (
+              <div style={{ background: '#fef2f2', borderTop: '1px solid #fecaca', padding: '0.75rem 1rem', color: '#991b1b', fontSize: '0.78rem' }}>
+                <strong>Revocation Reason:</strong>
+                <p style={{ margin: '0.2rem 0 0' }}>{result.revocation_reason}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
     </PublicLayout>
   );
 };
+

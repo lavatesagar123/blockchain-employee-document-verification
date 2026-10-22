@@ -28,10 +28,37 @@ export const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop animate-fade-in" onClick={onClose} role="dialog" aria-modal="true">
+    <div
+      className="modal-overlay modal-backdrop animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.75)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '1.25rem',
+        overflowY: 'auto'
+      }}
+    >
       <div
-        className="modal-container"
-        style={{ maxWidth }}
+        className="modal-content modal-container"
+        style={{
+          maxWidth,
+          width: '100%',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#ffffff',
+          borderRadius: '16px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          overflow: 'hidden'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -46,7 +73,7 @@ export const Modal = ({
           </button>
         </div>
 
-        <div className="modal-body">{children}</div>
+        <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>{children}</div>
 
         {footer && <div className="modal-footer">{footer}</div>}
       </div>

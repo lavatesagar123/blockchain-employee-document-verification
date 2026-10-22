@@ -7,12 +7,11 @@ export const formatDate = (dateString, options = {}) => {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: options.short ? 'short' : 'long',
-      day: 'numeric',
-      ...options
-    });
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
   } catch {
     return dateString;
   }

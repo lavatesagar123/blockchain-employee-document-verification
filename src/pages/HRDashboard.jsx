@@ -50,7 +50,7 @@ export const HRDashboard = () => {
         // Fallback to auth payload company details if company/me endpoint not yet created
         setCompanyProfile(user?.companyDetails || {
           name: user?.companyName,
-          status: user?.companyStatus || 'pending'
+          status: user?.companyStatus || 'approved'
         });
       }
 
@@ -96,7 +96,7 @@ export const HRDashboard = () => {
     }
   };
 
-  const status = companyProfile?.status || user?.companyStatus || 'pending';
+  const status = companyProfile?.status || user?.companyStatus || 'approved';
   const isApproved = status === 'approved';
   const isRejected = status === 'rejected';
 

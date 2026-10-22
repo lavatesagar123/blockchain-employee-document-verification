@@ -1,0 +1,314 @@
+/* ==========================================================================
+   TrustDoc Standalone Public Verification Page Styling
+   Clean, Compact, Zero Desktop Scrolling (Matching Landing Aesthetics)
+   ========================================================================== */
+
+.verify-page-root {
+  min-height: calc(100vh - 48px);
+  background-color: #ffffff;
+  color: #0f172a;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1rem;
+}
+
+/* Page Header */
+.verify-header-section {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.85rem;
+  position: relative;
+  z-index: 2;
+}
+
+.verify-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  color: #047857;
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.05);
+}
+
+.verify-pill-badge svg {
+  color: #059669;
+}
+
+.verify-headline {
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.35rem;
+  font-family: var(--font-heading);
+}
+
+.verify-headline .headline-navy {
+  color: #0f172a;
+}
+
+.verify-headline .headline-emerald {
+  color: #059669;
+}
+
+.verify-subtext {
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0 auto;
+  max-width: 520px;
+}
+
+/* Verification Input Card */
+.verify-form-card {
+  max-width: 500px;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 1.25rem 1.5rem 1.15rem;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.verify-field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.verify-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.verify-input-icon {
+  position: absolute;
+  left: 0.85rem;
+  color: #059669;
+  pointer-events: none;
+}
+
+.verify-text-input {
+  width: 100%;
+  height: 42px;
+  padding: 0.5rem 0.85rem 0.5rem 2.35rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.verify-text-input:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+
+.verify-field-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+/* File Upload Integrity Box */
+.verify-upload-box {
+  margin-top: 0.85rem;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.verify-upload-box:hover {
+  background: #f0fdf4;
+  border-color: #a7f3d0;
+}
+
+.verify-upload-active {
+  background: #f0fdf4;
+  border-color: #059669;
+  border-style: solid;
+}
+
+.verify-upload-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  margin-top: 0.2rem;
+}
+
+.verify-upload-sub {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.verify-submit-btn {
+  width: 100%;
+  height: 42px;
+  margin-top: 0.95rem;
+  background: #047857;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(4, 120, 87, 0.25);
+  transition: all 0.15s ease;
+}
+
+.verify-submit-btn:hover {
+  background: #065f46;
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.35);
+}
+
+.verify-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Error States */
+.verify-error-card {
+  max-width: 500px;
+  width: 100%;
+  margin-top: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #fee2e2;
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.verify-error-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.verify-error-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 0.15rem;
+}
+
+.verify-error-msg {
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Result Card */
+.verify-result-panel {
+  max-width: 540px;
+  width: 100%;
+  margin-top: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.verify-result-header {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.verify-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.verify-grid-item label {
+  font-size: 0.66rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: block;
+}
+
+.verify-grid-item strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.verify-proof-box {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.65rem 1rem;
+  font-size: 0.74rem;
+}
+
+@media (max-width: 600px) {
+  .verify-page-root {
+    padding: 1.5rem 1rem;
+    min-height: auto;
+  }
+  .verify-headline {
+    font-size: 1.75rem;
+  }
+  .verify-result-grid {
+    grid-template-columns: 1fr;
+  }
+}

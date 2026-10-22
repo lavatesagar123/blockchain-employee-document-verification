@@ -228,7 +228,7 @@ export const LoginPage = () => {
 
               {/* Remember Me */}
               <div className="form-options-row">
-                <label className="checkbox-label">
+                <label className="checkbox-label" style={{ fontSize: '0.825rem' }}>
                   <input
                     type="checkbox"
                     name="rememberMe"
@@ -239,12 +239,39 @@ export const LoginPage = () => {
                 </label>
               </div>
 
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '0.62rem 1rem',
+                  fontSize: '0.925rem',
+                  fontWeight: 600,
+                  marginTop: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <span>Signing in...</span>
+                ) : (
+                  <>
+                    <LogIn size={16} />
+                    <span>Sign In</span>
+                  </>
+                )}
+              </button>
+
               {/* Quick Role Fill for Testing / Evaluation */}
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', textAlign: 'center', marginBottom: '0.65rem' }}>
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', textAlign: 'center', marginBottom: '0.45rem' }}>
                   Quick Portal Evaluation Access
                 </span>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
                   <button
                     type="button"
                     onClick={async () => {
@@ -256,9 +283,9 @@ export const LoginPage = () => {
                       } catch {}
                     }}
                     className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.78rem', justifyContent: 'center' }}
+                    style={{ fontSize: '0.76rem', padding: '0.4rem 0.5rem', justifyContent: 'center' }}
                   >
-                    <Building size={14} color="#059669" />
+                    <Building size={13} color="#059669" />
                     <span>HR Portal</span>
                   </button>
 
@@ -273,9 +300,9 @@ export const LoginPage = () => {
                       } catch {}
                     }}
                     className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.78rem', justifyContent: 'center' }}
+                    style={{ fontSize: '0.76rem', padding: '0.4rem 0.5rem', justifyContent: 'center' }}
                   >
-                    <UserCheck size={14} color="#0284c7" />
+                    <UserCheck size={13} color="#0284c7" />
                     <span>Employee Portal</span>
                   </button>
                 </div>
@@ -283,16 +310,10 @@ export const LoginPage = () => {
             </form>
 
             <div className="auth-footer-prompt">
-              Don't have an account?
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
-                <Link to="/register-company" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Building size={14} /> Register Company
-                </Link>
-                <span style={{ color: '#cbd5e1' }}>•</span>
-                <Link to="/register-employee" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <UserCheck size={14} /> Employee Sign Up
-                </Link>
-              </div>
+              Are you an organization?{' '}
+              <Link to="/register-company" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Building size={14} /> Register Company
+              </Link>
             </div>
           </div>
         </div>

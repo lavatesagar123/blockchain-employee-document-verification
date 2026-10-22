@@ -402,9 +402,13 @@ export const DocumentCertificate = ({
       ),
       p2: (
         <>
-          Please confirm your acceptance of this offer by signing and returning a copy of this
-          letter by <strong>{formatDate(acceptanceDeadline)}</strong>. We look forward to
-          welcoming you to our team and wish you a successful and rewarding journey with us.
+          <p style={{ margin: '0 0 8px 0' }}>
+            Please confirm your acceptance of this offer by signing and returning a copy of this
+            letter by <strong>{formatDate(acceptanceDeadline)}</strong>.
+          </p>
+          <p style={{ margin: 0 }}>
+            We look forward to welcoming you to our team and wish you a successful and rewarding journey with us.
+          </p>
         </>
       ),
       leftDetails: [
@@ -675,9 +679,14 @@ export const DocumentCertificate = ({
 
           {/* Bottom Footer Bar with Icons */}
           <div className="cert-footer">
-            <div className="cert-footer-item">
-              <MapPin size={13} className="cert-footer-icon" />
-              <span>{companyAddress.replace('\n', ', ')}</span>
+            <div className="cert-footer-item cert-footer-address">
+              <MapPin size={15} className="cert-footer-icon" />
+              <div className="cert-footer-address-text">
+                <span className="cert-footer-company">{companyName}</span>
+                <span className="cert-footer-city">
+                  {company.city ? `${company.city}, Maharashtra - 411001` : 'Pune, Maharashtra - 411001'}
+                </span>
+              </div>
             </div>
             <div className="cert-footer-item">
               <Mail size={13} className="cert-footer-icon" />

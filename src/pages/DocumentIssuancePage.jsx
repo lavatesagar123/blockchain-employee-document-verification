@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { FormField } from '../components/FormField';
 import { isValidEmail } from '../utils/validators';
-import { formatDate, getDocumentTypeLabel } from '../utils/formatters';
+import { formatDate, getDocumentTypeLabel, truncateHash } from '../utils/formatters';
 import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
 import {
   FilePlus,
@@ -255,22 +255,39 @@ export const DocumentIssuancePage = () => {
               </div>
 
               <h2 style={{ fontSize: '1.85rem', color: '#0f172a', marginBottom: '0.4rem', fontWeight: 800 }}>
-                Document Successfully Issued
+                Document Successfully Issued & Anchored
               </h2>
-              <p style={{ color: '#64748b', fontSize: '0.98rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
-                The <strong>{getDocumentTypeLabel(formData.documentType)}</strong> has been cryptographically signed and registered on the verification ledger.
+              <p style={{ color: '#64748b', fontSize: '0.98rem', maxWidth: '640px', margin: '0 auto 1.25rem' }}>
+                The <strong>{getDocumentTypeLabel(formData.documentType)}</strong> for <strong>{formData.recipientName}</strong> has been cryptographically signed and registered on the verification ledger.
               </p>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+              {/* Blockchain Metadata Badges */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+                <span className="badge badge-approved" style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}>
+                  Verification ID: {issuedResult.verification_id || issuedResult.id}
+                </span>
+                <span className="badge badge-approved" style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}>
+                  Ref: {issuedResult.reference_number || issuedResult.ref_no}
+                </span>
+                <span className="badge badge-approved" style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}>
+                  Tx: {truncateHash(issuedResult.transaction_hash)}
+                </span>
+                <span className="badge badge-approved" style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}>
+                  Ledger Status: Verified
+                </span>
+              </div>
+
+              {/* Action Buttons: Save/PDF, Print, Registry, Issue Another */}
+              <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2rem' }}>
                 <button
                   type="button"
-                  onClick={() => handleDownloadPdf('issued-success-certificate-node', 'Issued_Document')}
+                  onClick={() => handleDownloadPdf('issued-success-certificate-node', 'Certificate')}
                   disabled={isDownloadingPdf}
                   className="btn btn-primary"
+                  style={{ minWidth: '190px' }}
                 >
                   <Download size={16} />
-                  <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download as PDF'}</span>
+                  <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download / Save as PDF'}</span>
                 </button>
 
                 <button
@@ -306,47 +323,86 @@ export const DocumentIssuancePage = () => {
                   <span>Issue Another Document</span>
                 </button>
               </div>
+
+              {/* View Switcher Tabs */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('certificate')}
+                  className={`btn btn-sm ${activeTab === 'certificate' ? 'btn-primary' : 'btn-secondary'}`}
+                >
+                  <FileText size={14} />
+                  <span>Full Certificate View</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('panel')}
+                  className={`btn btn-sm ${activeTab === 'panel' ? 'btn-primary' : 'btn-secondary'}`}
+                >
+                  <Layers size={14} />
+                  <span>Details & Ledger</span>
+                </button>
+              </div>
             </div>
 
-            {/* Issued Certificate Preview Display */}
-            <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-              <DocumentCertificate
-                previewId="issued-success-certificate-node"
-                documentData={{
-                  ...formData,
-                  verification_id: issuedResult.verification_id || issuedResult.id,
-                  transaction_hash: issuedResult.transaction_hash,
-                  ref_no: issuedResult.reference_number || issuedResult.ref_no,
-                  status: 'verified'
-                }}
-                company={companyDetails}
-                isDraft={false}
-              />
-            </div>
+            {/* Full High-Resolution Certificate View */}
+            {activeTab === 'certificate' ? (
+              <div style={{ maxWidth: '840px', margin: '0 auto', overflowX: 'auto' }}>
+                <DocumentCertificate
+                  previewId="issued-success-certificate-node"
+                  documentData={{
+                    ...formData,
+                    verification_id: issuedResult.verification_id || issuedResult.id,
+                    transaction_hash: issuedResult.transaction_hash,
+                    ref_no: issuedResult.reference_number || issuedResult.ref_no,
+                    status: 'verified'
+                  }}
+                  company={companyDetails}
+                  isDraft={false}
+                />
+              </div>
+            ) : (
+              <div style={{ maxWidth: '520px', margin: '0 auto' }}>
+                <DocumentInfoPanel
+                  documentData={{
+                    ...formData,
+                    verification_id: issuedResult.verification_id || issuedResult.id,
+                    transaction_hash: issuedResult.transaction_hash,
+                    ref_no: issuedResult.reference_number || issuedResult.ref_no,
+                    status: 'verified'
+                  }}
+                  isDraft={false}
+                  onScanClick={() => addToast('Document verified on ledger.', 'success')}
+                />
+              </div>
+            )}
           </div>
         ) : (
-          /* Two-Column Split Layout: Form on Left, Live Certificate Preview on Right */
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(340px, 1fr) minmax(340px, 1.25fr)',
-              gap: '2rem',
-              alignItems: 'start'
-            }}
-          >
-            {/* Left Column: Interactive Form & Document Type Selector */}
-            <div className="content-card-panel" style={{ padding: '2rem' }}>
-              <div style={{ marginBottom: '1.25rem' }}>
+          /* Standalone Full-Width Form Card: Clean, Spacious, No Side Certificate */
+          <div className="content-card-panel" style={{ maxWidth: '880px', margin: '0 auto', padding: '2.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
                 <span className="badge badge-approved" style={{ marginBottom: '0.5rem', display: 'inline-flex', gap: '4px' }}>
-                  <Sparkles size={12} /> Live Certificate Builder
+                  <Sparkles size={12} /> Employment Credential Issuer
                 </span>
-                <h3 style={{ fontSize: '1.35rem', margin: '0 0 0.35rem', color: '#0f172a', fontWeight: 800 }}>
+                <h3 style={{ fontSize: '1.45rem', margin: '0 0 0.35rem', color: '#0f172a', fontWeight: 800 }}>
                   Issue Employment Document
                 </h3>
-                <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>
-                  Select document type and fill in details. The certificate preview on the right updates in real-time.
+                <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
+                  Select document type and complete form. Once issued, the full certificate is generated for saving and printing.
                 </p>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setModalPreviewOpen(true)}
+                className="btn btn-secondary btn-sm"
+                title="Preview Draft Certificate"
+              >
+                <Eye size={14} />
+                <span>Preview Draft</span>
+              </button>
+            </div>
 
               {/* Document Type Selector Tabs */}
               <div style={{ marginBottom: '1.75rem' }}>
@@ -615,119 +671,35 @@ export const DocumentIssuancePage = () => {
                   disabled={submitting}
                 />
 
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-lg"
-                  style={{ width: '100%', marginTop: '1.25rem' }}
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <span>Issuing & Anchoring to API...</span>
-                  ) : (
-                    <>
-                      <FilePlus size={18} />
-                      <span>Issue {getDocumentTypeLabel(formData.documentType)}</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Right Column: Live Certificate Preview Toolbar & Preview */}
-            <div>
-              {/* Preview Action Header */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '1rem',
-                  flexWrap: 'wrap',
-                  gap: '0.75rem'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('certificate')}
-                    className={`btn btn-sm ${activeTab === 'certificate' ? 'btn-primary' : 'btn-secondary'}`}
-                  >
-                    <FileText size={14} />
-                    <span>Certificate View</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('panel')}
-                    className={`btn btn-sm ${activeTab === 'panel' ? 'btn-primary' : 'btn-secondary'}`}
-                  >
-                    <Layers size={14} />
-                    <span>Details & Ledger</span>
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => setModalPreviewOpen(true)}
-                    className="btn btn-secondary btn-sm"
-                    title="Fullscreen Preview"
+                    className="btn btn-secondary btn-lg"
+                    style={{ flex: '1', minWidth: '160px' }}
                   >
-                    <Maximize2 size={14} />
-                    <span>Fullscreen</span>
+                    <Eye size={18} />
+                    <span>Preview Draft</span>
                   </button>
 
                   <button
-                    type="button"
-                    onClick={() => handleDownloadPdf('live-issuance-certificate-node', 'Certificate_Draft')}
-                    disabled={isDownloadingPdf}
-                    className="btn btn-secondary btn-sm"
-                    title="Download as PDF"
+                    type="submit"
+                    className="btn btn-primary btn-lg"
+                    style={{ flex: '2', minWidth: '220px' }}
+                    disabled={submitting}
                   >
-                    <Download size={14} />
-                    <span>PDF</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => printCertificate()}
-                    className="btn btn-secondary btn-sm"
-                    title="Print Document"
-                  >
-                    <Printer size={14} />
-                    <span>Print</span>
+                    {submitting ? (
+                      <span>Issuing & Anchoring to API...</span>
+                    ) : (
+                      <>
+                        <FilePlus size={18} />
+                        <span>Issue {getDocumentTypeLabel(formData.documentType)} & Save</span>
+                      </>
+                    )}
                   </button>
                 </div>
-              </div>
-
-              {/* View Container */}
-              {activeTab === 'certificate' ? (
-                <div
-                  style={{
-                    background: '#f8fafc',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    overflowX: 'auto'
-                  }}
-                >
-                  <DocumentCertificate
-                    previewId="live-issuance-certificate-node"
-                    documentData={formData}
-                    company={companyDetails}
-                    isDraft={true}
-                  />
-                </div>
-              ) : (
-                <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-                  <DocumentInfoPanel
-                    documentData={formData}
-                    isDraft={true}
-                    onScanClick={() => addToast('This is a draft preview. Scan will be active upon issuance.', 'info')}
-                  />
-                </div>
-              )}
+              </form>
             </div>
-          </div>
         )}
 
         {/* Modal for Fullscreen Preview */}

@@ -9,9 +9,7 @@ import {
   UserCheck,
   FileText,
   FilePlus,
-  Activity,
-  Search,
-  ExternalLink
+  Activity
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
@@ -191,19 +189,6 @@ export const Sidebar = () => {
           </>
         )}
 
-        <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.08)', margin: '0.85rem 0' }} />
-
-        <div className="sidebar-section-heading">PUBLIC TOOLS</div>
-
-        <NavLink to="/verify" className="sidebar-link">
-          <Search size={18} />
-          <span>Verify Document</span>
-        </NavLink>
-
-        <NavLink to="/" className="sidebar-link">
-          <ExternalLink size={18} />
-          <span>Public Portal</span>
-        </NavLink>
       </nav>
 
       {/* Footer with Logout */}

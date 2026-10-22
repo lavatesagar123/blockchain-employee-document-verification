@@ -3,14 +3,15 @@ import { Navbar } from '../components/Navbar';
 import { ShieldCheck, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export const PublicLayout = ({ children }) => {
+export const PublicLayout = ({ children, hideFooter = false }) => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="public-layout-root">
+    <div className="public-layout-root" style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <main className="public-layout-content">{children}</main>
-      <footer className="public-footer">
+      <main className="public-layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>{children}</main>
+      {!hideFooter && (
+        <footer className="public-footer">
         <div className="container footer-inner">
           <div className="footer-brand-col">
             <div className="brand-logo" style={{ color: '#ffffff' }}>
@@ -37,7 +38,7 @@ export const PublicLayout = ({ children }) => {
               <li><Link to="/verify">Public Verification</Link></li>
               <li><Link to="/roles">Roles & Access</Link></li>
               <li><Link to="/register-company">Register Organization</Link></li>
-              <li><Link to="/register-employee">Employee Portal</Link></li>
+              <li><Link to="/login">Employee Portal</Link></li>
             </ul>
           </div>
 
@@ -61,6 +62,7 @@ export const PublicLayout = ({ children }) => {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 };

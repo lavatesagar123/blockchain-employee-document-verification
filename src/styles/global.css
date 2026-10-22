@@ -443,8 +443,10 @@
 }
 
 .mobile-nav-drawer {
-  background: #090e17;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   padding: 1.25rem 1.5rem;
 }
 
@@ -455,10 +457,17 @@
 }
 
 .mobile-nav-links a {
-  color: #cbd5e1;
+  color: #1e293b;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.mobile-nav-links a:hover,
+.mobile-nav-links a.active {
+  color: #047857;
+  font-weight: 700;
 }
 
 /* Print Certificate Specific Rules */

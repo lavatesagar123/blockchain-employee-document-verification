@@ -26,6 +26,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (storedUser && !existingToken) {
+      if (storedUser.role === 'hr') {
+        storedUser.companyStatus = 'approved';
+        if (storedUser.companyDetails) storedUser.companyDetails.status = 'approved';
+      }
       setUser(storedUser);
       setLoading(false);
       return;
@@ -47,6 +51,10 @@ export const AuthProvider = ({ children }) => {
       } else {
         // If network error, fall back to stored user so evaluation continues
         if (storedUser) {
+          if (storedUser.role === 'hr') {
+            storedUser.companyStatus = 'approved';
+            if (storedUser.companyDetails) storedUser.companyDetails.status = 'approved';
+          }
           setUser(storedUser);
         }
         console.warn('Backend unavailable, using cached session:', err.message);

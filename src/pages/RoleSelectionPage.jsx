@@ -68,9 +68,6 @@ export const RoleSelectionPage = () => {
                 <Link to="/login" className="btn btn-primary role-btn">
                   Employee Login <ArrowRight size={16} />
                 </Link>
-                <Link to="/register-employee" className="btn btn-secondary role-btn">
-                  Create Employee Account
-                </Link>
               </div>
             </div>
 

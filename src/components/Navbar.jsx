@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
-  LogIn,
+  User,
   LogOut,
   LayoutDashboard,
   Search,
@@ -31,48 +31,29 @@ export const Navbar = () => {
   return (
     <nav className="public-navbar">
       <div className="container nav-inner">
+        {/* Brand Logo */}
         <Link to="/" className="brand-logo" onClick={() => setMobileMenuOpen(false)}>
           <div className="brand-icon-wrap">
-            <ShieldCheck size={22} strokeWidth={2.5} />
+            <ShieldCheck size={20} strokeWidth={2.4} />
           </div>
           <span className="brand-name">
             Trust<span>Doc</span>
           </span>
         </Link>
 
-        {/* Desktop Nav Links */}
-        <ul className="nav-links">
-          <li>
-            <NavLink to="/" end>
-              Home
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/verify">
-              Verify Document
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/roles">Roles</NavLink>
-          </li>
-          <li>
-            <NavLink to="/register-company">Register Company</NavLink>
-          </li>
-          <li>
-            <NavLink to="/register-employee">Employee Sign Up</NavLink>
-          </li>
-        </ul>
-
         {/* Desktop Action Buttons */}
         <div className="nav-actions">
+          {/* Verify Document */}
           <Link
             to="/verify"
-            className="btn btn-outline-emerald btn-sm desktop-only"
-            title="Verify a document hash or ID"
+            className="nav-verify-link"
+            title="Public Verification Portal"
           >
-            <Search size={14} />
-            <span>Verify</span>
+            <Search size={15} strokeWidth={2.2} />
+            <span>Verify Document</span>
           </Link>
+
+          <div className="nav-divider" />
 
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
@@ -91,13 +72,11 @@ export const Navbar = () => {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <Link to="/login" className="btn btn-secondary btn-sm">
-                <LogIn size={15} />
-                <span>Log In</span>
-              </Link>
-              <Link to="/roles" className="btn btn-primary btn-sm">
-                <span>Get Started</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* Login */}
+              <Link to="/login" className="nav-login-btn">
+                <User size={15} strokeWidth={2.2} />
+                <span>Login</span>
               </Link>
             </div>
           )}
@@ -109,7 +88,7 @@ export const Navbar = () => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
           >
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -118,23 +97,11 @@ export const Navbar = () => {
       {mobileMenuOpen && (
         <div className="mobile-nav-drawer animate-fade-in">
           <div className="mobile-nav-links">
-            <NavLink to="/" end onClick={() => setMobileMenuOpen(false)}>
-              Home
-            </NavLink>
-            <NavLink to="/verify" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/verify" onClick={() => setMobileMenuOpen(false)}>
               Verify Document
-            </NavLink>
-            <NavLink to="/roles" onClick={() => setMobileMenuOpen(false)}>
-              Roles Overview
-            </NavLink>
-            <NavLink to="/register-company" onClick={() => setMobileMenuOpen(false)}>
-              Register Company
-            </NavLink>
-            <NavLink to="/register-employee" onClick={() => setMobileMenuOpen(false)}>
-              Employee Sign Up
-            </NavLink>
+            </Link>
 
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '0.5rem 0' }} />
+            <div style={{ height: '1px', background: '#e2e8f0', margin: '0.4rem 0' }} />
 
             {isAuthenticated ? (
               <>
@@ -157,22 +124,17 @@ export const Navbar = () => {
                 </button>
               </>
             ) : (
-              <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <Link
                   to="/login"
-                  className="btn btn-secondary"
+                  className="nav-login-btn"
+                  style={{ justifyContent: 'center' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Log In
+                  <User size={15} />
+                  <span>Login</span>
                 </Link>
-                <Link
-                  to="/roles"
-                  className="btn btn-primary"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Get Started
-                </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
