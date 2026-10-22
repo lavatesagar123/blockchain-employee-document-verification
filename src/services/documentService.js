@@ -69,6 +69,7 @@ export const documentService = {
             reporting_manager: 'Rohan Deshmukh',
             acceptance_deadline: '2025-04-22',
             issue_date: '2025-04-15',
+            custom_description: 'We are delighted to extend this offer of employment for the position of Full Stack Developer. This offer includes comprehensive benefits, medical coverage, and annual bonuses subject to performance evaluations.',
             status: 'verified',
             transaction_hash: '0x8f3a2e4d6c7b9e1f5a0c3b8e2d4f6a7b9c1d3e5f7a0b2c4d6e8f1a3b5c7d9e2a'
           },
@@ -91,6 +92,7 @@ export const documentService = {
             reporting_manager: 'Rohan Deshmukh',
             acceptance_deadline: '2025-05-15',
             issue_date: '2025-04-12',
+            custom_description: 'This Letter of Intent formally records our mutual interest to bring you on board as Senior UI/UX Designer. A formal appointment letter will be issued on completion of onboarding procedures.',
             status: 'verified',
             transaction_hash: '0x4c2b1a9e8f7d6c5b4a3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a'
           },
@@ -111,6 +113,7 @@ export const documentService = {
             location: 'Pune, Maharashtra',
             reporting_manager: 'Rohan Deshmukh',
             issue_date: '2025-04-01',
+            custom_description: 'This is to certify that Amit Patel has worked as Blockchain Engineer from March 1, 2022 to March 31, 2025. Their character, technical innovation, and dedication were exemplary throughout.',
             status: 'verified',
             transaction_hash: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b'
           },
@@ -132,6 +135,7 @@ export const documentService = {
             location: 'Pune, Maharashtra',
             reporting_manager: 'Rohan Deshmukh',
             issue_date: '2025-03-16',
+            custom_description: 'This letter confirms acceptance of resignation effective March 15, 2025. All company assets have been surrendered and final settlements processed with no outstanding liabilities.',
             status: 'verified',
             transaction_hash: '0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e'
           }

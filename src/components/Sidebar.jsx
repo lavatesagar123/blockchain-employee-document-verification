@@ -13,8 +13,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
-import { getInitials } from '../utils/formatters';
-
 export const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -26,19 +24,6 @@ export const Sidebar = () => {
     navigate('/login');
   };
 
-  const getRoleLabel = (role) => {
-    switch (role) {
-      case 'superadmin':
-        return 'Super Admin';
-      case 'hr':
-        return 'HR Administrator';
-      case 'employee':
-        return 'Employee';
-      default:
-        return role;
-    }
-  };
-
   return (
     <aside className="dashboard-sidebar">
       {/* Brand Header */}
@@ -47,31 +32,12 @@ export const Sidebar = () => {
           <div className="brand-icon-wrap" style={{ width: '32px', height: '32px' }}>
             <ShieldCheck size={18} />
           </div>
-          <span className="brand-name" style={{ fontSize: '1.2rem' }}>
-            Trust<span>Doc</span>
+          <span className="brand-name" style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+            Trust<span style={{ color: '#10b981', fontWeight: 800 }}>Doc</span>
           </span>
         </NavLink>
       </div>
 
-      {/* User Meta Card */}
-      {user && (
-        <div className="sidebar-user-card">
-          <div className="user-avatar-badge">{getInitials(user.name)}</div>
-          <div className="user-meta">
-            <div className="user-name" title={user.name}>
-              {user.name}
-            </div>
-            <div className="user-email" title={user.email}>
-              {user.email}
-            </div>
-            <div style={{ marginTop: '0.35rem' }}>
-              <span className="badge badge-approved" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
-                {getRoleLabel(user.role)}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Navigation Links based on user.role */}
       <nav className="sidebar-nav">

@@ -2,6 +2,7 @@ import React from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { ShieldCheck, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
 export const EmployeeLayout = ({ title, subtitle, actions = null, children }) => {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ export const EmployeeLayout = ({ title, subtitle, actions = null, children }) =>
               <Calendar size={14} />
               <span>{currentDate}</span>
             </div>
+
+            <TopbarUserProfile />
           </div>
         </header>
 

@@ -103,18 +103,7 @@ export const HRDashboard = () => {
   return (
     <HRLayout
       title="HR Administration Dashboard"
-      subtitle={`Manage workforce records, issue credentials, and track verified documents`}
-      actions={
-        <button
-          type="button"
-          onClick={fetchHRData}
-          disabled={loading || checking}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading || checking ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
+      subtitle="Manage workforce records, issue credentials, and track verified documents"
     >
       {loading ? (
         <LoadingState message="Loading organization workspace..." />

@@ -10,7 +10,12 @@ import { apiClient, setStoredToken, clearStoredToken } from './apiClient';
 
 export const authService = {
   login: async ({ email, password }) => {
-    const response = await apiClient.post('/api/auth/login/', { email, password });
+    // Pass both email and username so backend endpoints accepting either field work seamlessly
+    const response = await apiClient.post('/api/auth/login/', {
+      email,
+      username: email,
+      password
+    });
     if (response?.token) {
       setStoredToken(response.token);
     } else if (response?.access) {

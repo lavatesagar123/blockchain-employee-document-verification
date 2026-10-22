@@ -52,9 +52,10 @@ export const LoginPage = () => {
 
   const validate = () => {
     const errs = {};
-    if (!formData.email.trim()) {
-      errs.email = 'Email address is required';
-    } else if (!isValidEmail(formData.email.trim())) {
+    const inputVal = formData.email.trim();
+    if (!inputVal) {
+      errs.email = 'User ID or email address is required';
+    } else if (inputVal.includes('@') && !isValidEmail(inputVal)) {
       errs.email = 'Please enter a valid email address';
     }
 
@@ -164,20 +165,20 @@ export const LoginPage = () => {
             )}
 
             <form onSubmit={handleSubmit} noValidate>
-              {/* Email Input */}
+              {/* User ID / Email Input */}
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email">User ID or Email Address</label>
                 <div className="input-with-icon">
                   <Mail className="input-icon-left" size={18} />
                   <input
                     id="email"
                     name="email"
-                    type="email"
+                    type="text"
                     className={`form-control input-padded ${errors.email ? 'is-invalid' : ''}`}
-                    placeholder="name@company.com"
+                    placeholder="admin or user@company.com"
                     value={formData.email}
                     onChange={handleChange}
-                    autoComplete="email"
+                    autoComplete="username"
                     disabled={submitting}
                   />
                 </div>
@@ -271,7 +272,25 @@ export const LoginPage = () => {
                 <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', textAlign: 'center', marginBottom: '0.45rem' }}>
                   Quick Portal Evaluation Access
                 </span>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setFormData({ email: 'admin', password: 'password', rememberMe: true });
+                      try {
+                        const loggedUser = await login('admin', 'password');
+                        addToast(`Logged in as Platform Admin (${loggedUser.name})`, 'success');
+                        navigate('/superadmin/dashboard');
+                      } catch {}
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.74rem', padding: '0.4rem 0.35rem', justifyContent: 'center' }}
+                    title="Platform Admin (User ID: admin, Password: password)"
+                  >
+                    <ShieldCheck size={13} color="#059669" />
+                    <span>Admin</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={async () => {
@@ -283,7 +302,7 @@ export const LoginPage = () => {
                       } catch {}
                     }}
                     className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.76rem', padding: '0.4rem 0.5rem', justifyContent: 'center' }}
+                    style={{ fontSize: '0.74rem', padding: '0.4rem 0.35rem', justifyContent: 'center' }}
                   >
                     <Building size={13} color="#059669" />
                     <span>HR Portal</span>
@@ -300,11 +319,31 @@ export const LoginPage = () => {
                       } catch {}
                     }}
                     className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.76rem', padding: '0.4rem 0.5rem', justifyContent: 'center' }}
+                    style={{ fontSize: '0.74rem', padding: '0.4rem 0.35rem', justifyContent: 'center' }}
                   >
                     <UserCheck size={13} color="#0284c7" />
-                    <span>Employee Portal</span>
+                    <span>Employee</span>
                   </button>
+                </div>
+
+                {/* Development Notice */}
+                <div
+                  style={{
+                    marginTop: '0.55rem',
+                    padding: '0.4rem 0.6rem',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '0.69rem',
+                    color: '#64748b',
+                    textAlign: 'center',
+                    lineHeight: 1.35
+                  }}
+                >
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Platform Admin Credentials:</span> User ID: <code style={{ color: '#0f172a' }}>admin</code> | Password: <code style={{ color: '#0f172a' }}>password</code>
+                  <div style={{ color: '#94a3b8', fontSize: '0.64rem', marginTop: '1px' }}>
+                    *Development credentials. In production, configure strong passwords in the authentication service.
+                  </div>
                 </div>
               </div>
             </form>

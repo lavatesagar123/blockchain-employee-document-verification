@@ -292,6 +292,19 @@ export const DocumentInfoPanel = ({
             <span className="doc-info-colon">:</span>
             <span className="doc-info-val">{formatDate(issueDate, { short: true })}</span>
           </div>
+
+          {(documentData.custom_description || documentData.customDescription) && (
+            <div className="doc-info-row" style={{ alignItems: 'flex-start' }}>
+              <div className="doc-info-field">
+                <FileText size={15} className="doc-info-icon" />
+                <span>Custom Description</span>
+              </div>
+              <span className="doc-info-colon">:</span>
+              <span className="doc-info-val" style={{ fontSize: '0.78rem', whiteSpace: 'normal', lineHeight: 1.4 }}>
+                {documentData.custom_description || documentData.customDescription}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

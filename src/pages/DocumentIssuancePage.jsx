@@ -28,6 +28,20 @@ import {
 import { Modal } from '../components/Modal';
 import '../styles/dashboard.css';
 
+const DEFAULT_DESCRIPTIONS = {
+  offer_letter:
+    'We are delighted to extend this offer of employment for the position of Full Stack Developer. This offer includes full employee benefits, comprehensive health insurance coverage, and standard annual leave entitlement. Your employment is subject to satisfactory reference verification and successful completion of background checks.',
+
+  letter_of_intent:
+    'This Letter of Intent (LOI) formally conveys our intention to appoint you to the proposed position within our organization. This preliminary engagement is subject to mutual acceptance of terms and standard document verification. A detailed Appointment Letter outlining complete terms and conditions will be executed on or prior to your commencement date.',
+
+  experience_letter:
+    'This is to certify that the employee was employed with our organization and performed their assigned duties with commendable technical expertise, dedication, and professional ethics. They maintained exemplary conduct with team members and leadership throughout their tenure. We wish them success in all future endeavors.',
+
+  relieving_letter:
+    'This letter confirms the acceptance of the resignation submitted by the employee. They have been formally relieved of all duties and responsibilities with effect from the recorded relieving date. All company equipment, digital assets, and physical materials have been accounted for and returned, and all dues have been cleared in full with no outstanding liabilities.'
+};
+
 export const DocumentIssuancePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -45,6 +59,7 @@ export const DocumentIssuancePage = () => {
   const [formData, setFormData] = useState({
     selectedEmployeeId: '',
     documentType: 'offer_letter', // offer_letter, letter_of_intent, experience_letter, relieving_letter
+    customDescription: DEFAULT_DESCRIPTIONS.offer_letter,
     recipientName: 'Sagar Lavate',
     recipientEmail: 'sagar.lavate@email.com',
     recipientPhone: '+91 98765 43210',
@@ -129,10 +144,24 @@ export const DocumentIssuancePage = () => {
   };
 
   const handleDocumentTypeChange = (type) => {
+    setFormData((prev) => {
+      const isDefault =
+        Object.values(DEFAULT_DESCRIPTIONS).includes(prev.customDescription) ||
+        !prev.customDescription?.trim();
+      return {
+        ...prev,
+        documentType: type,
+        customDescription: isDefault ? (DEFAULT_DESCRIPTIONS[type] || '') : prev.customDescription
+      };
+    });
+  };
+
+  const handleResetDescription = () => {
     setFormData((prev) => ({
       ...prev,
-      documentType: type
+      customDescription: DEFAULT_DESCRIPTIONS[prev.documentType] || ''
     }));
+    addToast('Restored standard template wording', 'info');
   };
 
   const validate = () => {
@@ -175,6 +204,8 @@ export const DocumentIssuancePage = () => {
         recipient_phone: formData.recipientPhone.trim(),
         employee_id: formData.employeeId.trim(),
         document_type: formData.documentType,
+        custom_description: (formData.customDescription || '').trim(),
+        customDescription: (formData.customDescription || '').trim(),
         designation: formData.designation.trim(),
         department: formData.department.trim(),
         employment_type: formData.employmentType,
@@ -577,22 +608,35 @@ export const DocumentIssuancePage = () => {
 
                 {/* Dates based on Document Type */}
                 <div className="form-grid-2col">
-                  <FormField
-                    label={
-                      formData.documentType === 'offer_letter'
-                        ? 'Joining Date'
-                        : formData.documentType === 'letter_of_intent'
-                        ? 'Proposed Joining Date'
-                        : 'Employment Start Date'
-                    }
-                    name="startDate"
-                    type="date"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    error={errors.startDate}
-                    required
-                    disabled={submitting}
-                  />
+                  {formData.documentType === 'relieving_letter' ? (
+                    <FormField
+                      label="Resignation / Notice Date"
+                      name="resignationDate"
+                      type="date"
+                      value={formData.resignationDate}
+                      onChange={handleChange}
+                      error={errors.resignationDate}
+                      required
+                      disabled={submitting}
+                    />
+                  ) : (
+                    <FormField
+                      label={
+                        formData.documentType === 'offer_letter'
+                          ? 'Joining Date'
+                          : formData.documentType === 'letter_of_intent'
+                          ? 'Proposed Joining Date'
+                          : 'Employment Start Date'
+                      }
+                      name="startDate"
+                      type="date"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      error={errors.startDate}
+                      required
+                      disabled={submitting}
+                    />
+                  )}
 
                   {(formData.documentType === 'experience_letter' ||
                     formData.documentType === 'relieving_letter') && (
@@ -625,12 +669,12 @@ export const DocumentIssuancePage = () => {
                   )}
                 </div>
 
-                {/* Compensation Fields for Offer & LOI */}
+                {/* Compensation Fields for Offer & LOI only */}
                 {(formData.documentType === 'offer_letter' ||
                   formData.documentType === 'letter_of_intent') && (
                   <div className="form-grid-2col">
                     <FormField
-                      label="Annual CTC"
+                      label={formData.documentType === 'offer_letter' ? 'Annual CTC' : 'Indicative Annual CTC'}
                       name="salaryOrStipend"
                       placeholder="e.g. ₹ 6,00,000"
                       value={formData.salaryOrStipend}
@@ -649,15 +693,57 @@ export const DocumentIssuancePage = () => {
                   </div>
                 )}
 
-                {/* Reporting Manager */}
-                <FormField
-                  label="Reporting Manager / Contact Person"
-                  name="reportingManager"
-                  placeholder="e.g. Rohan Deshmukh"
-                  value={formData.reportingManager}
-                  onChange={handleChange}
-                  disabled={submitting}
-                />
+                {/* Reporting Manager for Offer & LOI only */}
+                {(formData.documentType === 'offer_letter' ||
+                  formData.documentType === 'letter_of_intent') && (
+                  <FormField
+                    label="Reporting Manager / Contact Person"
+                    name="reportingManager"
+                    placeholder="e.g. Rohan Deshmukh"
+                    value={formData.reportingManager}
+                    onChange={handleChange}
+                    disabled={submitting}
+                  />
+                )}
+
+                {/* Custom Letter Description Section */}
+                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <label htmlFor="customDescription" style={{ fontWeight: 700, margin: 0, color: '#0f172a', fontSize: '0.85rem' }}>
+                      Custom Letter Description & Approved Wording *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleResetDescription}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#059669',
+                        fontSize: '0.74rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                      title="Reset to default wording for this document type"
+                    >
+                      ↺ Reset to template default
+                    </button>
+                  </div>
+                  <textarea
+                    id="customDescription"
+                    name="customDescription"
+                    rows={4}
+                    className="form-control"
+                    placeholder="Enter custom description or approved wording for this letter..."
+                    value={formData.customDescription}
+                    onChange={handleChange}
+                    disabled={submitting}
+                    style={{ lineHeight: 1.55, resize: 'vertical' }}
+                  />
+                  <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.35rem' }}>
+                    Edits to custom description update the draft preview immediately and are embedded in the generated letter.
+                  </div>
+                </div>
 
                 {/* Remarks */}
                 <FormField

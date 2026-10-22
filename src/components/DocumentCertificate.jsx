@@ -327,6 +327,11 @@ export const DocumentCertificate = ({
     '2025-04-22';
 
   const remarks = documentData.remarks || '';
+  const customDescription =
+    documentData.custom_description ||
+    documentData.customDescription ||
+    documentData.description ||
+    '';
 
   const refNo =
     documentData.ref_no ||
@@ -630,6 +635,14 @@ export const DocumentCertificate = ({
               </div>
             </div>
           </div>
+
+          {/* Custom Letter Description / Approved Terms (If Provided) */}
+          {customDescription && (
+            <div className="cert-custom-desc-box">
+              <div className="cert-custom-desc-title">Approved Particulars & Custom Clauses:</div>
+              <p className="cert-custom-desc-text">{customDescription}</p>
+            </div>
+          )}
 
           {/* Paragraph 2 */}
           <div className="cert-body-p">{activeDoc.p2}</div>

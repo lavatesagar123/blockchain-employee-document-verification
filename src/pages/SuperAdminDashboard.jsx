@@ -13,7 +13,6 @@ import {
   Users,
   ArrowRight,
   Eye,
-  RefreshCw,
   Activity,
   ShieldCheck
 } from 'lucide-react';
@@ -71,18 +70,6 @@ export const SuperAdminDashboard = () => {
     <AdminLayout
       title="Super Admin Overview"
       subtitle="System status, corporate verification metrics, and recent enterprise registrations"
-      actions={
-        <button
-          type="button"
-          onClick={handleRetry}
-          disabled={loading || isRetrying}
-          className="btn btn-secondary btn-sm"
-          title="Refresh metrics from API"
-        >
-          <RefreshCw size={14} className={loading || isRetrying ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
     >
       {loading ? (
         <LoadingState message="Fetching system telemetry from API..." />

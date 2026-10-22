@@ -94,12 +94,13 @@ export const AuthProvider = ({ children }) => {
         err.message?.toLowerCase().includes('failed to fetch') ||
         err.message?.toLowerCase().includes('network')
       ) {
+        const cleanId = (email || '').trim().toLowerCase();
         let role = 'hr';
         let name = 'HR Administrator';
-        if (email.includes('admin')) {
+        if (cleanId === 'admin' || cleanId.startsWith('admin') || cleanId.includes('admin')) {
           role = 'superadmin';
-          name = 'System Administrator';
-        } else if (email.includes('employee') || email.includes('sagar')) {
+          name = 'Platform Administrator';
+        } else if (cleanId.includes('employee') || cleanId.includes('sagar')) {
           role = 'employee';
           name = 'Sagar Lavate';
         } else {
@@ -108,9 +109,9 @@ export const AuthProvider = ({ children }) => {
         }
 
         const offlineUser = {
-          id: 'dev-hr-01',
+          id: role === 'superadmin' ? 'admin' : 'dev-hr-01',
           name,
-          email: email || 'hr@trustdoc.com',
+          email: cleanId.includes('@') ? cleanId : `${cleanId}@trustdoc.local`,
           role,
           companyName: 'TrustDoc Technologies',
           companyStatus: 'approved',

@@ -3,6 +3,7 @@ import { Sidebar } from '../components/Sidebar';
 import { ShieldCheck, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/apiClient';
+import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
 export const AdminLayout = ({ title, subtitle, actions = null, children }) => {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ export const AdminLayout = ({ title, subtitle, actions = null, children }) => {
               <Calendar size={14} />
               <span>{currentDate}</span>
             </div>
+
+            <TopbarUserProfile />
 
             <div className="topbar-api-chip" title={`Connected API endpoint: ${API_BASE_URL}`}>
               <div className="pulse-dot-green" />

@@ -14,7 +14,6 @@ import {
   CheckCircle,
   ArrowRight,
   Eye,
-  RefreshCw,
   Search
 } from 'lucide-react';
 import '../styles/dashboard.css';
@@ -70,17 +69,6 @@ export const EmployeeDashboard = () => {
     <EmployeeLayout
       title="Employee Portal"
       subtitle="Your verified blockchain credentials and employment portfolio"
-      actions={
-        <button
-          type="button"
-          onClick={fetchEmployeeData}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
     >
       {loading ? (
         <LoadingState message="Loading your credential portfolio..." />

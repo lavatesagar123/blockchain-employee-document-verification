@@ -3,6 +3,7 @@ import { Sidebar } from '../components/Sidebar';
 import { Building, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
+import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
 export const HRLayout = ({ title, subtitle, actions = null, children }) => {
   const { user } = useAuth();
@@ -42,6 +43,8 @@ export const HRLayout = ({ title, subtitle, actions = null, children }) => {
               <Calendar size={14} />
               <span>{currentDate}</span>
             </div>
+
+            <TopbarUserProfile />
           </div>
         </header>
 
