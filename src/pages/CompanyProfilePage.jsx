@@ -16,7 +16,6 @@ import {
   Globe,
   Edit2,
   ExternalLink,
-  RefreshCw,
   User,
   ShieldCheck
 } from 'lucide-react';
@@ -98,28 +97,17 @@ export const CompanyProfilePage = () => {
   return (
     <HRLayout
       title="Company Profile"
-      subtitle="Corporate identity, incorporation credentials, and blockchain authorization status"
+      subtitle="Corporate credentials & authorization status"
       actions={
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={fetchProfile}
-            disabled={loading}
-            className="btn btn-secondary btn-sm"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>Refresh</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenEdit}
-            disabled={loading || !company}
-            className="btn btn-outline-emerald btn-sm"
-          >
-            <Edit2 size={14} />
-            <span>Edit Profile</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenEdit}
+          disabled={loading || !company}
+          className="btn btn-outline-emerald btn-sm"
+        >
+          <Edit2 size={14} />
+          <span>Edit Profile</span>
+        </button>
       }
     >
       {loading ? (

@@ -14,12 +14,11 @@ import {
   Building2,
   Users,
   FileText,
-  FilePlus,
   Clock,
   ShieldCheck,
-  RefreshCw,
-  ArrowRight,
-  XCircle
+  XCircle,
+  FilePlus,
+  ArrowRight
 } from 'lucide-react';
 import '../styles/dashboard.css';
 
@@ -102,8 +101,8 @@ export const HRDashboard = () => {
 
   return (
     <HRLayout
-      title="HR Administration Dashboard"
-      subtitle="Manage workforce records, issue credentials, and track verified documents"
+      title="HR Dashboard"
+      subtitle="Workforce records & credential issuance"
     >
       {loading ? (
         <LoadingState message="Loading organization workspace..." />
@@ -156,7 +155,7 @@ export const HRDashboard = () => {
               onClick={handleCheckStatus}
               disabled={checking}
             >
-              <RefreshCw size={16} className={checking ? 'animate-spin' : ''} />
+              <ShieldCheck size={16} className={checking ? 'animate-spin' : ''} />
               <span>{checking ? 'Checking Status...' : 'Check Registration Status'}</span>
             </button>
 
@@ -235,60 +234,6 @@ export const HRDashboard = () => {
                 <FileText size={24} />
               </div>
             </div>
-          </div>
-
-          {/* Quick Action Navigation */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-            <Link
-              to="/hr/issue-document"
-              className="content-card-panel"
-              style={{ padding: '1.5rem', textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #10b981' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FilePlus size={22} />
-                </div>
-                <div>
-                  <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>Issue Document</strong>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Generate verifiable letters</span>
-                </div>
-              </div>
-              <ArrowRight size={18} color="#94a3b8" />
-            </Link>
-
-            <Link
-              to="/hr/employees"
-              className="content-card-panel"
-              style={{ padding: '1.5rem', textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #0ea5e9' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Users size={22} />
-                </div>
-                <div>
-                  <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>Manage Employees</strong>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Directory & workforce list</span>
-                </div>
-              </div>
-              <ArrowRight size={18} color="#94a3b8" />
-            </Link>
-
-            <Link
-              to="/hr/documents"
-              className="content-card-panel"
-              style={{ padding: '1.5rem', textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #8b5cf6' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#f3e8ff', color: '#7e22ce', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FileText size={22} />
-                </div>
-                <div>
-                  <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>Issued Registry</strong>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Track & revoke documents</span>
-                </div>
-              </div>
-              <ArrowRight size={18} color="#94a3b8" />
-            </Link>
           </div>
 
           {/* Recent Issued Documents */}

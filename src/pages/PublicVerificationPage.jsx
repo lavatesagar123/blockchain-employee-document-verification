@@ -18,7 +18,7 @@ import {
   XCircle,
   WifiOff,
   Copy,
-  RefreshCw
+  Loader2
 } from 'lucide-react';
 import { API_BASE_URL } from '../services/apiClient';
 import '../styles/landing.css';
@@ -204,7 +204,7 @@ export const PublicVerificationPage = () => {
             >
               {verifying ? (
                 <>
-                  <RefreshCw size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                   <span>Querying Verification Ledger...</span>
                 </>
               ) : (

@@ -17,8 +17,7 @@ import {
   XCircle,
   Ban,
   RotateCcw,
-  ExternalLink,
-  RefreshCw
+  ExternalLink
 } from 'lucide-react';
 import '../styles/dashboard.css';
 
@@ -153,17 +152,6 @@ export const CompanyManagementPage = () => {
     <AdminLayout
       title="Company Management & Approvals"
       subtitle="Audit legal registration credentials, approve, reject, or suspend enterprise issuers"
-      actions={
-        <button
-          type="button"
-          onClick={fetchCompanies}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
     >
       <div className="content-card-panel animate-fade-in">
         {/* Panel Header with Filters & Search */}

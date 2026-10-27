@@ -9,12 +9,11 @@ import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { formatDate, getDocumentTypeLabel, truncateHash } from '../utils/formatters';
 import { DocumentCertificate } from '../components/DocumentCertificate';
-import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
+import { downloadCertificateAsPdf, openCertificateInNewTab, printCertificate } from '../utils/pdfGenerator';
 import {
   FileText,
   FilePlus,
   Search,
-  RefreshCw,
   Eye,
   AlertTriangle,
   Copy,
@@ -96,24 +95,13 @@ export const IssuedDocumentsPage = () => {
 
   return (
     <HRLayout
-      title="Issued Document Registry"
-      subtitle="Complete ledger of cryptographic credentials issued by your organization"
+      title="Issued Documents"
+      subtitle="Ledger of issued credentials"
       actions={
-        <div style={{ display: 'flex', gap: '0.6rem' }}>
-          <button
-            type="button"
-            onClick={fetchDocuments}
-            disabled={loading}
-            className="btn btn-secondary btn-sm"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>Refresh</span>
-          </button>
-          <Link to="/hr/issue-document" className="btn btn-primary btn-sm">
-            <FilePlus size={15} />
-            <span>Issue New</span>
-          </Link>
-        </div>
+        <Link to="/hr/issue-document" className="btn btn-primary btn-sm">
+          <FilePlus size={15} />
+          <span>Issue New</span>
+        </Link>
       }
     >
       <div className="content-card-panel animate-fade-in">
@@ -260,7 +248,8 @@ export const IssuedDocumentsPage = () => {
         isOpen={!!viewDoc}
         onClose={() => setViewDoc(null)}
         title={viewDoc ? `Document Inspection: ${getDocumentTypeLabel(viewDoc.document_type || viewDoc.type)}` : 'Document Inspection'}
-        maxWidth="920px"
+        maxWidth="960px"
+        allowFullscreen={true}
         footer={
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
             <Link
@@ -272,7 +261,21 @@ export const IssuedDocumentsPage = () => {
               <ExternalLink size={14} /> Open Public Verifier
             </Link>
 
-            <div style={{ display: 'flex', gap: '0.65rem' }}>
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!viewDoc) return;
+                  await openCertificateInNewTab('issued-registry-cert-node');
+                  addToast('Opening certificate PDF in new tab...', 'info');
+                }}
+                className="btn btn-outline-emerald btn-sm"
+                title="Open unclipped PDF in new browser tab"
+              >
+                <ExternalLink size={14} />
+                <span>Open PDF</span>
+              </button>
+
               <button
                 type="button"
                 onClick={async () => {

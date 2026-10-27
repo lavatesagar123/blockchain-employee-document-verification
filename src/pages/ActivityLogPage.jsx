@@ -7,7 +7,6 @@ import { formatDateTime } from '../utils/formatters';
 import {
   Activity,
   Search,
-  RefreshCw,
   Clock,
   Shield,
   FileText,
@@ -57,17 +56,6 @@ export const ActivityLogPage = () => {
     <AdminLayout
       title="System Activity & Audit Logs"
       subtitle="Immutable event audit trail tracking administrative and ledger actions"
-      actions={
-        <button
-          type="button"
-          onClick={fetchLogs}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
     >
       <div className="content-card-panel animate-fade-in">
         {/* Filters */}

@@ -17,7 +17,6 @@ import {
   Briefcase,
   ShieldCheck,
   Edit2,
-  RefreshCw,
   Hash
 } from 'lucide-react';
 import '../styles/dashboard.css';
@@ -85,29 +84,18 @@ export const EmployeeProfilePage = () => {
 
   return (
     <EmployeeLayout
-      title="My Profile & Identity"
-      subtitle="Personal employment identity and cryptographic credential anchor"
+      title="Profile"
+      subtitle="Identity & credential details"
       actions={
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={fetchProfile}
-            disabled={loading}
-            className="btn btn-secondary btn-sm"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>Refresh</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenEdit}
-            disabled={loading || !profile}
-            className="btn btn-outline-emerald btn-sm"
-          >
-            <Edit2 size={14} />
-            <span>Edit Info</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenEdit}
+          disabled={loading || !profile}
+          className="btn btn-outline-emerald btn-sm"
+        >
+          <Edit2 size={14} />
+          <span>Edit Info</span>
+        </button>
       }
     >
       {loading ? (

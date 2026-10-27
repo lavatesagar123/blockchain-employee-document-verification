@@ -8,13 +8,14 @@ import { verificationService } from '../services/verificationService';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { useToast } from '../components/Toast';
-import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
+import { downloadCertificateAsPdf, openCertificateInNewTab, printCertificate } from '../utils/pdfGenerator';
 import { getDocumentTypeLabel } from '../utils/formatters';
 import {
   Share2,
   Printer,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
 import '../styles/dashboard.css';
 
@@ -84,6 +85,16 @@ export const DocumentDetailsPage = () => {
     }
   };
 
+  const handleOpenPdf = async () => {
+    if (!documentData) return;
+    try {
+      await openCertificateInNewTab('document-details-certificate-node');
+      addToast('Opening certificate PDF in new tab...', 'info');
+    } catch (err) {
+      addToast('Failed to open PDF. Try downloading instead.', 'error');
+    }
+  };
+
   const vId = documentData?.verification_id || documentData?.id || id;
 
   const companyDetails = {
@@ -98,10 +109,10 @@ export const DocumentDetailsPage = () => {
 
   return (
     <EmployeeLayout
-      title="Credential Inspection & Certificate"
-      subtitle={`Verified ledger entry: ${vId}`}
+      title="Document Certificate"
+      subtitle={`Ledger entry: ${vId}`}
       actions={
-        <div style={{ display: 'flex', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={handleShare}
@@ -111,6 +122,16 @@ export const DocumentDetailsPage = () => {
           >
             <Share2 size={14} />
             <span>Share</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenPdf}
+            disabled={loading || !documentData}
+            className="btn btn-outline-emerald btn-sm"
+            title="Open complete unclipped PDF in new tab"
+          >
+            <ExternalLink size={14} />
+            <span>Open PDF</span>
           </button>
           <button
             type="button"

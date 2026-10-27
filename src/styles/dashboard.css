@@ -7,22 +7,22 @@
 .stats-grid-4col {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .stats-grid-3col {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .stat-metric-card {
   background: #ffffff;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -85,7 +85,7 @@
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .panel-header-row {
@@ -237,30 +237,31 @@
   background: #ffffff;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
-  padding: 2rem;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .profile-main-info {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .profile-large-avatar {
-  width: 72px;
-  height: 72px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 1.15rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .profile-large-avatar.hr {
@@ -272,14 +273,15 @@
 }
 
 .profile-text h2 {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   color: var(--text-main);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
+  font-weight: 700;
 }
 
 .profile-text p {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 /* Blockchain Banner info */

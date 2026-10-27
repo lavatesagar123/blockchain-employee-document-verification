@@ -11,7 +11,6 @@ import {
   Users,
   Search,
   Eye,
-  RefreshCw,
   Mail,
   Phone,
   Building,
@@ -73,17 +72,6 @@ export const UserManagementPage = () => {
     <AdminLayout
       title="User Management"
       subtitle="Supervise registered accounts, administrative roles, and system access"
-      actions={
-        <button
-          type="button"
-          onClick={fetchUsers}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
     >
       <div className="content-card-panel animate-fade-in">
         {/* Header Tabs & Search */}

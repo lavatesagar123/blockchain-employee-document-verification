@@ -8,7 +8,12 @@ import { jsPDF } from 'jspdf';
  * - Longer letters with extended custom descriptions automatically slice
  *   naturally into multiple A4 pages without shrinking fonts or clipping content.
  */
-export const downloadCertificateAsPdf = async (elementOrId, options = {}) => {
+/**
+ * Core builder that produces a high-fidelity jsPDF document from a DOM element.
+ * Fixes canvas clipping by setting explicit scroll offsets (scrollX: 0, scrollY: 0, x: 0, y: 0)
+ * and dynamically calculates printable bounds across single or multi-page letters.
+ */
+export const buildCertificatePdfDoc = async (elementOrId, options = {}) => {
   const element =
     typeof elementOrId === 'string'
       ? document.getElementById(elementOrId)
@@ -18,20 +23,22 @@ export const downloadCertificateAsPdf = async (elementOrId, options = {}) => {
     throw new Error('Certificate element not found for PDF generation');
   }
 
-  const filename = options.filename || 'Document_Certificate.pdf';
-
   // Temporarily remove shadow for clean canvas capture
   const prevBoxShadow = element.style.boxShadow;
   element.style.boxShadow = 'none';
 
   try {
     const canvas = await html2canvas(element, {
-      scale: options.scale || 2.5, // High DPI capture (clear text & seals)
+      scale: options.scale || 2.0, // High DPI capture (crisp text & seals)
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      windowWidth: Math.max(element.scrollWidth || 0, 800),
+      windowHeight: Math.max(element.scrollHeight || 0, 1130)
     });
 
     element.style.boxShadow = prevBoxShadow;
@@ -113,13 +120,32 @@ export const downloadCertificateAsPdf = async (elementOrId, options = {}) => {
       }
     }
 
-    pdf.save(filename);
-    return true;
+    return pdf;
   } catch (error) {
     element.style.boxShadow = prevBoxShadow;
-    console.error('Failed to export certificate PDF:', error);
+    console.error('Failed to build certificate PDF document:', error);
     throw error;
   }
+};
+
+/**
+ * Downloads the certificate directly to the client machine as a PDF file.
+ */
+export const downloadCertificateAsPdf = async (elementOrId, options = {}) => {
+  const filename = options.filename || 'Document_Certificate.pdf';
+  const pdf = await buildCertificatePdfDoc(elementOrId, options);
+  pdf.save(filename);
+  return true;
+};
+
+/**
+ * Opens the unclipped, complete certificate PDF in a new browser tab for full preview and native printing/viewing.
+ */
+export const openCertificateInNewTab = async (elementOrId, options = {}) => {
+  const pdf = await buildCertificatePdfDoc(elementOrId, options);
+  const blobUrl = pdf.output('bloburl');
+  window.open(blobUrl, '_blank');
+  return true;
 };
 
 /**

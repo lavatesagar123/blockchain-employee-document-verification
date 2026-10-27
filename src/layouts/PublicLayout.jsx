@@ -7,7 +7,16 @@ export const PublicLayout = ({ children, hideFooter = false }) => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="public-layout-root" style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div
+      className="public-layout-root"
+      style={{
+        background: '#ffffff',
+        minHeight: '100vh',
+        height: hideFooter ? '100vh' : 'auto',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <Navbar />
       <main className="public-layout-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>{children}</main>
       {!hideFooter && (

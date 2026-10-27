@@ -10,7 +10,7 @@ import { useToast } from '../components/Toast';
 import { FormField } from '../components/FormField';
 import { isValidEmail } from '../utils/validators';
 import { formatDate, getDocumentTypeLabel, truncateHash } from '../utils/formatters';
-import { downloadCertificateAsPdf, printCertificate } from '../utils/pdfGenerator';
+import { downloadCertificateAsPdf, openCertificateInNewTab, printCertificate } from '../utils/pdfGenerator';
 import {
   FilePlus,
   ShieldCheck,
@@ -23,7 +23,8 @@ import {
   Maximize2,
   CheckCircle2,
   Briefcase,
-  Layers
+  Layers,
+  ExternalLink
 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import '../styles/dashboard.css';
@@ -247,6 +248,15 @@ export const DocumentIssuancePage = () => {
     }
   };
 
+  const handleOpenPdf = async (nodeId) => {
+    try {
+      await openCertificateInNewTab(nodeId || 'live-issuance-certificate-node');
+      addToast('Opening certificate PDF in new tab...', 'info');
+    } catch (err) {
+      addToast('Failed to open PDF. Try downloading instead.', 'error');
+    }
+  };
+
   // Company details context / props
   const companyDetails = {
     name: user?.companyName || user?.companyDetails?.name || 'TrustDoc Technologies',
@@ -261,8 +271,8 @@ export const DocumentIssuancePage = () => {
 
   return (
     <HRLayout
-      title="Issue Employment Document"
-      subtitle="Design, preview, and issue tamper-proof blockchain credentials"
+      title="Issue Document"
+      subtitle="Draft & issue blockchain credentials"
     >
       <div className="animate-fade-in">
         {issuedResult ? (
@@ -308,7 +318,7 @@ export const DocumentIssuancePage = () => {
                 </span>
               </div>
 
-              {/* Action Buttons: Save/PDF, Print, Registry, Issue Another */}
+              {/* Action Buttons: Save/PDF, Open PDF, Print, Registry, Issue Another */}
               <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2rem' }}>
                 <button
                   type="button"
@@ -319,6 +329,16 @@ export const DocumentIssuancePage = () => {
                 >
                   <Download size={16} />
                   <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download / Save as PDF'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenPdf('issued-success-certificate-node')}
+                  className="btn btn-outline-emerald"
+                  title="Open certificate in browser PDF viewer"
+                >
+                  <ExternalLink size={16} />
+                  <span>Open Full PDF</span>
                 </button>
 
                 <button
@@ -792,14 +812,24 @@ export const DocumentIssuancePage = () => {
         <Modal
           isOpen={modalPreviewOpen}
           onClose={() => setModalPreviewOpen(false)}
-          title={`Preview: ${getDocumentTypeLabel(formData.documentType)}`}
-          maxWidth="920px"
+          title={`Draft Preview: ${getDocumentTypeLabel(formData.documentType)}`}
+          maxWidth="960px"
+          allowFullscreen={true}
           footer={
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Previewing official green-and-white certificate template
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ fontSize: '0.825rem', color: '#64748b' }}>
+                Previewing cryptographic certificate template with current form data
               </div>
-              <div style={{ display: 'flex', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => handleOpenPdf('modal-issuance-certificate-node')}
+                  className="btn btn-outline-emerald btn-sm"
+                  title="Open complete unclipped PDF in new tab"
+                >
+                  <ExternalLink size={14} />
+                  <span>Open PDF</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => handleDownloadPdf('modal-issuance-certificate-node', 'Certificate_Preview')}
@@ -828,7 +858,7 @@ export const DocumentIssuancePage = () => {
             </div>
           }
         >
-          <div style={{ padding: '0.5rem 0' }}>
+          <div style={{ width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center', padding: '0.75rem 0' }}>
             <DocumentCertificate
               previewId="modal-issuance-certificate-node"
               documentData={formData}

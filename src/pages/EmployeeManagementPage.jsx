@@ -13,7 +13,6 @@ import {
   Users,
   UserPlus,
   Search,
-  RefreshCw,
   Eye
 } from 'lucide-react';
 import '../styles/dashboard.css';
@@ -106,28 +105,17 @@ export const EmployeeManagementPage = () => {
 
   return (
     <HRLayout
-      title="Employee Management"
-      subtitle="Corporate talent directory, workforce onboarding, and verified credential holders"
+      title="Employees"
+      subtitle="Talent directory & workforce onboarding"
       actions={
-        <div style={{ display: 'flex', gap: '0.6rem' }}>
-          <button
-            type="button"
-            onClick={fetchEmployees}
-            disabled={loading}
-            className="btn btn-secondary btn-sm"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span>Refresh</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAddModalOpen(true)}
-            className="btn btn-primary btn-sm"
-          >
-            <UserPlus size={15} />
-            <span>Add Employee</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setAddModalOpen(true)}
+          className="btn btn-primary btn-sm"
+        >
+          <UserPlus size={15} />
+          <span>Add Employee</span>
+        </button>
       }
     >
       <div className="content-card-panel animate-fade-in">

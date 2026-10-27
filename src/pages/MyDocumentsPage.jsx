@@ -13,7 +13,6 @@ import {
   Eye,
   Download,
   Share2,
-  RefreshCw,
   ExternalLink,
   ShieldCheck,
   Building,
@@ -66,19 +65,8 @@ export const MyDocumentsPage = () => {
 
   return (
     <EmployeeLayout
-      title="My Documents Portfolio"
-      subtitle="View, inspect, download, and share your blockchain-anchored career credentials"
-      actions={
-        <button
-          type="button"
-          onClick={fetchMyDocuments}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      }
+      title="My Documents"
+      subtitle="Verified credentials & certificates"
     >
       <div className="content-card-panel animate-fade-in">
         {/* Filter & Search Bar */}
