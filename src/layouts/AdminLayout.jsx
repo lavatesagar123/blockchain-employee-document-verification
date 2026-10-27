@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../services/apiClient';
 import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
-export const AdminLayout = ({ title, subtitle, actions = null, children }) => {
+export const AdminLayout = ({ title, subtitle, children }) => {
   const { user } = useAuth();
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -31,8 +31,6 @@ export const AdminLayout = ({ title, subtitle, actions = null, children }) => {
           </div>
 
           <div className="topbar-actions">
-            {actions}
-
             <div className="topbar-date-chip">
               <Calendar size={14} />
               <span>{currentDate}</span>

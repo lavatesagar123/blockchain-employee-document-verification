@@ -86,17 +86,6 @@ export const EmployeeProfilePage = () => {
     <EmployeeLayout
       title="Profile"
       subtitle="Identity & credential details"
-      actions={
-        <button
-          type="button"
-          onClick={handleOpenEdit}
-          disabled={loading || !profile}
-          className="btn btn-outline-emerald btn-sm"
-        >
-          <Edit2 size={14} />
-          <span>Edit Info</span>
-        </button>
-      }
     >
       {loading ? (
         <LoadingState message="Loading your profile credentials..." />
@@ -128,6 +117,16 @@ export const EmployeeProfilePage = () => {
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleOpenEdit}
+              disabled={loading || !profile}
+              className="btn btn-outline-emerald btn-sm"
+            >
+              <Edit2 size={14} />
+              <span>Edit Info</span>
+            </button>
           </div>
 
           {/* Detailed Info Panel */}

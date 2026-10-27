@@ -111,54 +111,10 @@ export const DocumentDetailsPage = () => {
     <EmployeeLayout
       title="Document Certificate"
       subtitle={`Ledger entry: ${vId}`}
-      actions={
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={loading || !documentData}
-            className="btn btn-secondary btn-sm"
-            title="Copy verification link"
-          >
-            <Share2 size={14} />
-            <span>Share</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenPdf}
-            disabled={loading || !documentData}
-            className="btn btn-outline-emerald btn-sm"
-            title="Open complete unclipped PDF in new tab"
-          >
-            <ExternalLink size={14} />
-            <span>Open PDF</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            disabled={loading || !documentData || downloadingPdf}
-            className="btn btn-secondary btn-sm"
-            title="Download PDF"
-          >
-            <Download size={14} />
-            <span>{downloadingPdf ? 'Exporting...' : 'PDF'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => printCertificate()}
-            disabled={loading || !documentData}
-            className="btn btn-primary btn-sm"
-            title="Print Document"
-          >
-            <Printer size={14} />
-            <span>Print</span>
-          </button>
-        </div>
-      }
     >
       <div className="animate-fade-in">
-        {/* Back Link */}
-        <div style={{ marginBottom: '1.25rem' }}>
+        {/* Navigation & Document Actions Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <Link
             to="/employee/documents"
             style={{
@@ -173,6 +129,48 @@ export const DocumentDetailsPage = () => {
           >
             <ArrowLeft size={16} /> Back to My Documents
           </Link>
+
+          {documentData && (
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="btn btn-secondary btn-sm"
+                title="Copy verification link"
+              >
+                <Share2 size={14} />
+                <span>Share</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenPdf}
+                className="btn btn-outline-emerald btn-sm"
+                title="Open complete unclipped PDF in new tab"
+              >
+                <ExternalLink size={14} />
+                <span>Open PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+                className="btn btn-secondary btn-sm"
+                title="Download PDF"
+              >
+                <Download size={14} />
+                <span>{downloadingPdf ? 'Exporting...' : 'PDF'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => printCertificate()}
+                className="btn btn-primary btn-sm"
+                title="Print Document"
+              >
+                <Printer size={14} />
+                <span>Print</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -184,17 +182,23 @@ export const DocumentDetailsPage = () => {
             onRetry={fetchDocument}
           />
         ) : documentData ? (
-          /* Side-by-side certificate and info panel matching reference design */
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(340px, 1.4fr) minmax(320px, 1fr)',
-              gap: '2.5rem',
-              alignItems: 'start'
-            }}
-          >
-            {/* Left: Exact Reference Certificate */}
-            <div style={{ overflowX: 'auto' }}>
+          /* Full unclipped document certificate view followed by ledger details */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Full High-Resolution Certificate View (No half-screen clipping) */}
+            <div
+              className="content-card-panel"
+              style={{
+                maxWidth: '880px',
+                width: '100%',
+                margin: '0 auto',
+                padding: '2rem 1rem',
+                overflowX: 'auto',
+                display: 'flex',
+                justifyContent: 'center',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0'
+              }}
+            >
               <DocumentCertificate
                 previewId="document-details-certificate-node"
                 documentData={documentData}
@@ -203,8 +207,8 @@ export const DocumentDetailsPage = () => {
               />
             </div>
 
-            {/* Right: Reference Document Information Panel & Verification Panel */}
-            <div>
+            {/* Document Ledger & Verification Details Panel */}
+            <div style={{ maxWidth: '880px', width: '100%', margin: '0 auto' }}>
               <DocumentInfoPanel
                 documentData={documentData}
                 isDraft={false}

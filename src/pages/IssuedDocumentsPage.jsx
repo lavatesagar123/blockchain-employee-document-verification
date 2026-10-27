@@ -97,12 +97,6 @@ export const IssuedDocumentsPage = () => {
     <HRLayout
       title="Issued Documents"
       subtitle="Ledger of issued credentials"
-      actions={
-        <Link to="/hr/issue-document" className="btn btn-primary btn-sm">
-          <FilePlus size={15} />
-          <span>Issue New</span>
-        </Link>
-      }
     >
       <div className="content-card-panel animate-fade-in">
         {/* Filter & Search Bar */}
@@ -148,8 +142,14 @@ export const IssuedDocumentsPage = () => {
             </select>
           </div>
 
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Total: <strong>{documents.length}</strong> credentials
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              Total: <strong>{documents.length}</strong> credentials
+            </span>
+            <Link to="/hr/issue-document" className="btn btn-primary btn-sm">
+              <FilePlus size={15} />
+              <span>Issue Document</span>
+            </Link>
           </div>
         </div>
 
@@ -312,8 +312,8 @@ export const IssuedDocumentsPage = () => {
         }
       >
         {viewDoc && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%' }}>
+            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', overflowX: 'auto', display: 'flex', justifyContent: 'center', width: '100%' }}>
               <DocumentCertificate
                 previewId="issued-registry-cert-node"
                 documentData={viewDoc}

@@ -98,17 +98,6 @@ export const CompanyProfilePage = () => {
     <HRLayout
       title="Company Profile"
       subtitle="Corporate credentials & authorization status"
-      actions={
-        <button
-          type="button"
-          onClick={handleOpenEdit}
-          disabled={loading || !company}
-          className="btn btn-outline-emerald btn-sm"
-        >
-          <Edit2 size={14} />
-          <span>Edit Profile</span>
-        </button>
-      }
     >
       {loading ? (
         <LoadingState message="Fetching company profile from API..." />
@@ -137,6 +126,16 @@ export const CompanyProfilePage = () => {
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleOpenEdit}
+              disabled={loading || !company}
+              className="btn btn-outline-emerald btn-sm"
+            >
+              <Edit2 size={14} />
+              <span>Edit Profile</span>
+            </button>
           </div>
 
           {/* Incorporation Details Panel */}

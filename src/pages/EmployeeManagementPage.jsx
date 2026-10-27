@@ -107,16 +107,6 @@ export const EmployeeManagementPage = () => {
     <HRLayout
       title="Employees"
       subtitle="Talent directory & workforce onboarding"
-      actions={
-        <button
-          type="button"
-          onClick={() => setAddModalOpen(true)}
-          className="btn btn-primary btn-sm"
-        >
-          <UserPlus size={15} />
-          <span>Add Employee</span>
-        </button>
-      }
     >
       <div className="content-card-panel animate-fade-in">
         {/* Search & Header */}
@@ -136,8 +126,18 @@ export const EmployeeManagementPage = () => {
             />
           </div>
 
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Workforce: <strong>{employees.length}</strong> active members
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              Workforce: <strong>{employees.length}</strong> active members
+            </span>
+            <button
+              type="button"
+              onClick={() => setAddModalOpen(true)}
+              className="btn btn-primary btn-sm"
+            >
+              <UserPlus size={15} />
+              <span>Add Employee</span>
+            </button>
           </div>
         </div>
 

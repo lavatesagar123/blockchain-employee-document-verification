@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
-export const HRLayout = ({ title, subtitle, actions = null, children }) => {
+export const HRLayout = ({ title, subtitle, children }) => {
   const { user } = useAuth();
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -37,8 +37,6 @@ export const HRLayout = ({ title, subtitle, actions = null, children }) => {
           </div>
 
           <div className="topbar-actions">
-            {actions}
-
             <div className="topbar-date-chip">
               <Calendar size={14} />
               <span>{currentDate}</span>

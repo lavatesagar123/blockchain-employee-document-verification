@@ -23,9 +23,13 @@ export const buildCertificatePdfDoc = async (elementOrId, options = {}) => {
     throw new Error('Certificate element not found for PDF generation');
   }
 
-  // Temporarily remove shadow for clean canvas capture
+  // Temporarily enforce full dimensions and remove shadow for clean unclipped capture
   const prevBoxShadow = element.style.boxShadow;
+  const prevWidth = element.style.width;
+  const prevMinWidth = element.style.minWidth;
   element.style.boxShadow = 'none';
+  element.style.width = '800px';
+  element.style.minWidth = '800px';
 
   try {
     const canvas = await html2canvas(element, {
@@ -37,11 +41,13 @@ export const buildCertificatePdfDoc = async (elementOrId, options = {}) => {
       scrollY: 0,
       x: 0,
       y: 0,
-      windowWidth: Math.max(element.scrollWidth || 0, 800),
-      windowHeight: Math.max(element.scrollHeight || 0, 1130)
+      windowWidth: 1000,
+      windowHeight: Math.max(element.scrollHeight || 0, 1150)
     });
 
     element.style.boxShadow = prevBoxShadow;
+    element.style.width = prevWidth;
+    element.style.minWidth = prevMinWidth;
 
     // Standard A4: 210mm x 297mm
     const pdf = new jsPDF({
@@ -123,6 +129,8 @@ export const buildCertificatePdfDoc = async (elementOrId, options = {}) => {
     return pdf;
   } catch (error) {
     element.style.boxShadow = prevBoxShadow;
+    element.style.width = prevWidth;
+    element.style.minWidth = prevMinWidth;
     console.error('Failed to build certificate PDF document:', error);
     throw error;
   }

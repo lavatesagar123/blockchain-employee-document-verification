@@ -15,18 +15,15 @@ import {
   FilePlus,
   ShieldCheck,
   FileText,
-  Eye,
   AlertCircle,
   Download,
   Printer,
   Sparkles,
-  Maximize2,
   CheckCircle2,
   Briefcase,
   Layers,
   ExternalLink
 } from 'lucide-react';
-import { Modal } from '../components/Modal';
 import '../styles/dashboard.css';
 
 const DEFAULT_DESCRIPTIONS = {
@@ -50,7 +47,6 @@ export const DocumentIssuancePage = () => {
 
   const [employeesList, setEmployeesList] = useState([]);
   const [activeTab, setActiveTab] = useState('certificate'); // 'certificate' or 'panel'
-  const [modalPreviewOpen, setModalPreviewOpen] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   // Default initial dates
@@ -443,16 +439,6 @@ export const DocumentIssuancePage = () => {
                   Select document type and complete form. Once issued, the full certificate is generated for saving and printing.
                 </p>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setModalPreviewOpen(true)}
-                className="btn btn-secondary btn-sm"
-                title="Preview Draft Certificate"
-              >
-                <Eye size={14} />
-                <span>Preview Draft</span>
-              </button>
             </div>
 
               {/* Document Type Selector Tabs */}
@@ -761,7 +747,7 @@ export const DocumentIssuancePage = () => {
                     style={{ lineHeight: 1.55, resize: 'vertical' }}
                   />
                   <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.35rem' }}>
-                    Edits to custom description update the draft preview immediately and are embedded in the generated letter.
+                    Approved description and clauses are cryptographically embedded in the issued document.
                   </div>
                 </div>
 
@@ -777,29 +763,19 @@ export const DocumentIssuancePage = () => {
                   disabled={submitting}
                 />
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => setModalPreviewOpen(true)}
-                    className="btn btn-secondary btn-lg"
-                    style={{ flex: '1', minWidth: '160px' }}
-                  >
-                    <Eye size={18} />
-                    <span>Preview Draft</span>
-                  </button>
-
+                <div style={{ marginTop: '1.75rem' }}>
                   <button
                     type="submit"
                     className="btn btn-primary btn-lg"
-                    style={{ flex: '2', minWidth: '220px' }}
+                    style={{ width: '100%', minHeight: '48px' }}
                     disabled={submitting}
                   >
                     {submitting ? (
-                      <span>Issuing & Anchoring to API...</span>
+                      <span>Issuing & Anchoring to Blockchain...</span>
                     ) : (
                       <>
                         <FilePlus size={18} />
-                        <span>Issue {getDocumentTypeLabel(formData.documentType)} & Save</span>
+                        <span>Issue {getDocumentTypeLabel(formData.documentType)} & Generate Certificate</span>
                       </>
                     )}
                   </button>
@@ -807,66 +783,6 @@ export const DocumentIssuancePage = () => {
               </form>
             </div>
         )}
-
-        {/* Modal for Fullscreen Preview */}
-        <Modal
-          isOpen={modalPreviewOpen}
-          onClose={() => setModalPreviewOpen(false)}
-          title={`Draft Preview: ${getDocumentTypeLabel(formData.documentType)}`}
-          maxWidth="960px"
-          allowFullscreen={true}
-          footer={
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ fontSize: '0.825rem', color: '#64748b' }}>
-                Previewing cryptographic certificate template with current form data
-              </div>
-              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => handleOpenPdf('modal-issuance-certificate-node')}
-                  className="btn btn-outline-emerald btn-sm"
-                  title="Open complete unclipped PDF in new tab"
-                >
-                  <ExternalLink size={14} />
-                  <span>Open PDF</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadPdf('modal-issuance-certificate-node', 'Certificate_Preview')}
-                  disabled={isDownloadingPdf}
-                  className="btn btn-primary btn-sm"
-                >
-                  <Download size={14} />
-                  <span>Download PDF</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => printCertificate()}
-                  className="btn btn-secondary btn-sm"
-                >
-                  <Printer size={14} />
-                  <span>Print</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalPreviewOpen(false)}
-                  className="btn btn-secondary btn-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          }
-        >
-          <div style={{ width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center', padding: '0.75rem 0' }}>
-            <DocumentCertificate
-              previewId="modal-issuance-certificate-node"
-              documentData={formData}
-              company={companyDetails}
-              isDraft={true}
-            />
-          </div>
-        </Modal>
       </div>
     </HRLayout>
   );

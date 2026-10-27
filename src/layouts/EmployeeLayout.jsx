@@ -4,7 +4,7 @@ import { ShieldCheck, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { TopbarUserProfile } from '../components/TopbarUserProfile';
 
-export const EmployeeLayout = ({ title, subtitle, actions = null, children }) => {
+export const EmployeeLayout = ({ title, subtitle, children }) => {
   const { user } = useAuth();
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -31,8 +31,6 @@ export const EmployeeLayout = ({ title, subtitle, actions = null, children }) =>
           </div>
 
           <div className="topbar-actions">
-            {actions}
-
             <div className="topbar-date-chip">
               <Calendar size={14} />
               <span>{currentDate}</span>
