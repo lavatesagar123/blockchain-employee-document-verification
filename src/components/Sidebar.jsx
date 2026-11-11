@@ -9,7 +9,8 @@ import {
   UserCheck,
   FileText,
   FilePlus,
-  Activity
+  Activity,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
@@ -79,51 +80,69 @@ export const Sidebar = () => {
           </>
         )}
 
-        {user?.role === 'hr' && (
-          <>
-            <div className="sidebar-section-heading">HR PORTAL</div>
+        {user?.role === 'hr' && (() => {
+          const isCompanyApproved = user?.companyStatus === 'approved' || user?.companyDetails?.status === 'approved';
 
-            <NavLink
-              to="/hr/dashboard"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            >
-              <LayoutDashboard size={18} />
-              <span>HR Dashboard</span>
-            </NavLink>
+          return (
+            <>
+              <div className="sidebar-section-heading">HR PORTAL</div>
 
-            <NavLink
-              to="/hr/profile"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            >
-              <Building size={18} />
-              <span>Company Profile</span>
-            </NavLink>
+              <NavLink
+                to="/hr/dashboard"
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
+                <LayoutDashboard size={18} />
+                <span>HR Dashboard</span>
+              </NavLink>
 
-            <NavLink
-              to="/hr/employees"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            >
-              <Users size={18} />
-              <span>Employee Management</span>
-            </NavLink>
+              <NavLink
+                to="/hr/profile"
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
+                <Building size={18} />
+                <span>Company Profile</span>
+              </NavLink>
 
-            <NavLink
-              to="/hr/issue-document"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            >
-              <FilePlus size={18} />
-              <span>Issue Document</span>
-            </NavLink>
+              {isCompanyApproved ? (
+                <>
+                  <NavLink
+                    to="/hr/employees"
+                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                  >
+                    <Users size={18} />
+                    <span>Employee Management</span>
+                  </NavLink>
 
-            <NavLink
-              to="/hr/documents"
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-            >
-              <FileText size={18} />
-              <span>Issued Documents</span>
-            </NavLink>
-          </>
-        )}
+                  <NavLink
+                    to="/hr/issue-document"
+                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                  >
+                    <FilePlus size={18} />
+                    <span>Issue Document</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/hr/documents"
+                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                  >
+                    <FileText size={18} />
+                    <span>Issued Documents</span>
+                  </NavLink>
+                </>
+              ) : (
+                <div style={{ margin: '0.75rem 0.5rem 0.25rem', padding: '0.75rem', background: 'rgba(245, 158, 11, 0.08)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <Lock size={12} />
+                    <span>Features Locked</span>
+                  </div>
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.72rem', color: '#94a3b8', lineHeight: 1.35 }}>
+                    Document issuance and workforce operations unlock upon Super Admin approval.
+                  </p>
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {user?.role === 'employee' && (
           <>

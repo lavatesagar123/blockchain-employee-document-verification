@@ -10,7 +10,9 @@ import {
   Zap,
   MapPin,
   Mail,
-  Globe
+  Globe,
+  Building2,
+  Search
 } from 'lucide-react';
 import '../styles/landing.css';
 
@@ -161,6 +163,18 @@ export const LandingPage = () => {
               <p className="hero-description">
                 Secure, trusted and tamper-proof employment document verification for a transparent and reliable future.
               </p>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', margin: '0.5rem 0 1.5rem' }}>
+                <Link to="/register-company" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1.35rem' }}>
+                  <Building2 size={16} />
+                  <span>Register Organization</span>
+                </Link>
+                <Link to="/verify" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1.35rem' }}>
+                  <Search size={16} />
+                  <span>Verify Document</span>
+                </Link>
+              </div>
 
               {/* Four Compact Benefits in a Single Horizontal Row */}
               <div className="hero-benefits-row">

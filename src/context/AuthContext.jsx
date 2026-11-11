@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService } from '../services/authService';
-import { getStoredToken, clearStoredToken } from '../services/apiClient';
+import { getStoredToken, setStoredToken, clearStoredToken } from '../services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -26,9 +26,11 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (storedUser && !existingToken) {
-      if (storedUser.role === 'hr') {
+      if (storedUser.role === 'hr' && !storedUser.companyStatus) {
         storedUser.companyStatus = 'approved';
-        if (storedUser.companyDetails) storedUser.companyDetails.status = 'approved';
+        if (storedUser.companyDetails && !storedUser.companyDetails.status) {
+          storedUser.companyDetails.status = 'approved';
+        }
       }
       setUser(storedUser);
       setLoading(false);
@@ -51,9 +53,11 @@ export const AuthProvider = ({ children }) => {
       } else {
         // If network error, fall back to stored user so evaluation continues
         if (storedUser) {
-          if (storedUser.role === 'hr') {
+          if (storedUser.role === 'hr' && !storedUser.companyStatus) {
             storedUser.companyStatus = 'approved';
-            if (storedUser.companyDetails) storedUser.companyDetails.status = 'approved';
+            if (storedUser.companyDetails && !storedUser.companyDetails.status) {
+              storedUser.companyDetails.status = 'approved';
+            }
           }
           setUser(storedUser);
         }
@@ -108,21 +112,47 @@ export const AuthProvider = ({ children }) => {
           name = 'HR Manager';
         }
 
+        let companyName = 'TrustDoc Technologies';
+        let companyStatus = 'approved';
+        let companyDetails = {
+          name: 'TrustDoc Technologies',
+          status: 'approved',
+          tagline: 'Secure Documents | Trusted Future',
+          address: 'TrustDoc Technologies\nPune, Maharashtra - 411001',
+          email: 'hr@trustdoc.com',
+          website: 'www.trustdoc.com'
+        };
+
+        // Check if an offline pending or registered company exists in storage for this HR user
+        try {
+          const pendingReg = JSON.parse(localStorage.getItem('trustdoc_pending_registration') || 'null');
+          if (
+            pendingReg &&
+            (pendingReg.hr_email?.toLowerCase() === cleanId ||
+              pendingReg.email?.toLowerCase() === cleanId)
+          ) {
+            companyName = pendingReg.name;
+            companyStatus = pendingReg.status || 'pending';
+            name = pendingReg.hr_name || name;
+            companyDetails = {
+              name: pendingReg.name,
+              status: companyStatus,
+              address: pendingReg.address,
+              email: pendingReg.email,
+              website: pendingReg.website,
+              registrationNumber: pendingReg.registration_number
+            };
+          }
+        } catch {}
+
         const offlineUser = {
-          id: role === 'superadmin' ? 'admin' : 'dev-hr-01',
+          id: role === 'superadmin' ? 'admin' : `hr-${Date.now().toString(36)}`,
           name,
           email: cleanId.includes('@') ? cleanId : `${cleanId}@trustdoc.local`,
           role,
-          companyName: 'TrustDoc Technologies',
-          companyStatus: 'approved',
-          companyDetails: {
-            name: 'TrustDoc Technologies',
-            status: 'approved',
-            tagline: 'Secure Documents | Trusted Future',
-            address: 'TrustDoc Technologies\nPune, Maharashtra - 411001',
-            email: 'hr@trustdoc.com',
-            website: 'www.trustdoc.com'
-          }
+          companyName,
+          companyStatus,
+          companyDetails
         };
 
         setUser(offlineUser);

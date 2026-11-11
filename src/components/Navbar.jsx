@@ -7,7 +7,8 @@ import {
   LayoutDashboard,
   Search,
   Menu,
-  X
+  X,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -73,6 +74,12 @@ export const Navbar = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {/* Register Company */}
+              <Link to="/register-company" className="nav-register-btn" title="Register Organization on TrustDoc">
+                <Building2 size={15} />
+                <span>Register Company</span>
+              </Link>
+
               {/* Login */}
               <Link to="/login" className="nav-login-btn">
                 <User size={15} strokeWidth={2.2} />
@@ -125,6 +132,16 @@ export const Navbar = () => {
               </>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <Link
+                  to="/register-company"
+                  className="nav-register-btn"
+                  style={{ justifyContent: 'center' }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Building2 size={15} />
+                  <span>Register Company</span>
+                </Link>
+
                 <Link
                   to="/login"
                   className="nav-login-btn"

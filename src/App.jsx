@@ -46,6 +46,9 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/roles" element={<RoleSelectionPage />} />
               <Route path="/register-company" element={<CompanyRegistrationPage />} />
+              <Route path="/register" element={<CompanyRegistrationPage />} />
+              <Route path="/company-registration" element={<CompanyRegistrationPage />} />
+              <Route path="/company/register" element={<CompanyRegistrationPage />} />
               <Route path="/register-employee" element={<Navigate to="/login" replace />} />
               <Route path="/verify" element={<PublicVerificationPage />} />
               <Route path="/verify-document" element={<PublicVerificationPage />} />
@@ -114,7 +117,7 @@ function App() {
               <Route
                 path="/hr/employees"
                 element={
-                  <ProtectedRoute allowedRoles={['hr']}>
+                  <ProtectedRoute allowedRoles={['hr']} requireApprovedCompany={true}>
                     <EmployeeManagementPage />
                   </ProtectedRoute>
                 }
@@ -122,7 +125,7 @@ function App() {
               <Route
                 path="/hr/issue-document"
                 element={
-                  <ProtectedRoute allowedRoles={['hr']}>
+                  <ProtectedRoute allowedRoles={['hr']} requireApprovedCompany={true}>
                     <DocumentIssuancePage />
                   </ProtectedRoute>
                 }
@@ -130,7 +133,7 @@ function App() {
               <Route
                 path="/hr/documents"
                 element={
-                  <ProtectedRoute allowedRoles={['hr']}>
+                  <ProtectedRoute allowedRoles={['hr']} requireApprovedCompany={true}>
                     <IssuedDocumentsPage />
                   </ProtectedRoute>
                 }
