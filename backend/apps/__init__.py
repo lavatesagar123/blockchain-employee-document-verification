@@ -1,0 +1,1 @@
+# TrustDoc Django apps package
