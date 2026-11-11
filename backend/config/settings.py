@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.employees',
     'apps.documents',
+    'apps.hr',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,5 @@ CORS_ALLOWED_ORIGINS = _get_list(
 )
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Content-Disposition']
+
+FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:5173').rstrip('/')

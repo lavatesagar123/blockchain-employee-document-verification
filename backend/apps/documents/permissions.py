@@ -14,8 +14,14 @@ class IsDocumentOwnerOrAuthorized(IsActiveUser):
         if not self.has_permission(request, view):
             return False
 
-        if user.role in (User.ROLE_SUPERADMIN, User.ROLE_HR):
+        if user.role == User.ROLE_SUPERADMIN:
             return True
+
+        if user.role == User.ROLE_HR:
+            hr_profile = getattr(user, 'hr_profile', None)
+            if hr_profile and hr_profile.company_id and obj.company_id:
+                return hr_profile.company_id == obj.company_id
+            return False
 
         if user.role == User.ROLE_EMPLOYEE:
             profile = getattr(user, 'employee_profile', None)

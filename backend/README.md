@@ -17,7 +17,8 @@ backend/
 └── apps/
     ├── accounts/            # Custom User model, JWT auth, RBAC permissions, AuthService
     ├── employees/           # Company & EmployeeProfile models, registration, profile APIs
-    └── documents/           # IssuedDocument, DocumentAuditLog, ownership checks, secure PDF downloads
+    ├── hr/                  # HRProfile, Company registration/profiles, workforce directory, HR stats
+    └── documents/           # IssuedDocument, DocumentAuditLog, issuance, revocation, multi-page QR PDFs
 ```
 
 ---
@@ -114,14 +115,28 @@ python manage.py runserver 0.0.0.0:8000
 | `GET` | `/api/employees/me/` | Employee Role | Retrieves authenticated employee profile details |
 | `PATCH` / `PUT` | `/api/employees/me/` | Employee Role | Updates editable profile fields (`name`, `phone`, `designation`, `department`, `location`, `bio`, `linkedin_url`) |
 
-### Issued Documents & Secure Downloads (`/api/employee/documents/` & `/api/documents/`)
+### Issued Documents, Issuance, Revocation & Secure Downloads (`/api/employee/documents/` & `/api/documents/`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `GET` | `/api/employee/documents/` | Employee Role | Lists documents belonging strictly to the authenticated employee (`?type=`, `?status=`, `?search=`) |
 | `GET` | `/api/employee/documents/{id}/` | Owner / HR / Admin | Inspects full document metadata and logs a `viewed` audit entry |
-| `GET` | `/api/documents/{id}/` | Owner / HR / Admin | Shared alias for document inspection |
-| `GET` | `/api/employee/documents/{id}/download/` | Owner / HR / Admin | Authenticated, ownership-verified PDF download (`Content-Disposition: attachment`) with path-traversal protection and `downloaded` audit log |
-| `GET` | `/api/documents/{id}/download/` | Owner / HR / Admin | Shared alias for secure document download |
+| `GET` | `/api/employee/documents/{id}/download/` | Owner / HR / Admin | Authenticated, ownership-verified PDF download (`Content-Disposition: attachment`) |
+| `GET` | `/api/documents/` | Approved HR Role | Lists company issued documents (`?type=`, `?status=`, `?search=`) |
+| `POST` | `/api/documents/` | Approved HR Role | Issues Offer/LOI/Experience/Relieving letters with custom descriptions, QR URL, SHA-256 & multi-page PDF |
+| `GET` | `/api/documents/{id}/` | Owner / Issuing HR / Admin | Shared alias for document inspection |
+| `GET` | `/api/documents/{id}/download/` | Owner / Issuing HR / Admin | Streams stored file or dynamically generated multi-page QR PDF certificate |
+| `POST` | `/api/documents/{id}/revoke/` | Approved Issuing HR | Revokes an issued document with mandatory audit reason |
+
+### HR & Company Management (`/api/companies/` & `/api/hr/`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/companies/register/` | Public | Multipart/JSON organization registration + primary HR admin (starts `pending`) |
+| `GET` | `/api/companies/status/?query=` | Public | Checks registration audit status by CIN, ID, or tracking ref |
+| `GET` / `PATCH` | `/api/companies/me/` | HR Role | Views or updates HR's organization profile |
+| `GET` / `PATCH` | `/api/hr/profile/` | HR Role | Views or updates HR administrator's personal profile |
+| `GET` | `/api/hr/dashboard/stats/` | HR Role | Returns real database metrics (`total_employees`, `total_documents`, `verified_documents`, `revoked_documents`, `recent_documents`) |
+| `GET` / `POST` | `/api/hr/employees/` | Approved HR Role | Searches, filters (`?department=`, `?search=`, `?employment_type=`, `?status=`), and onboards company employees |
+| `GET` / `PATCH` / `DELETE` | `/api/hr/employees/{id}/` | Approved HR Role | Inspects, updates, or suspends a company employee |
 
 ---
 

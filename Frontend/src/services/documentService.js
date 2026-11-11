@@ -2,237 +2,122 @@
  * Document Issuance and Management Service
  */
 
-import { apiClient } from './apiClient';
+import { apiClient, API_BASE_URL, getStoredToken } from './apiClient';
+
+async function downloadAuthenticatedFile(url, { openInNewTab = false, fallbackFilename } = {}) {
+  const token = getStoredToken();
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  let response;
+  try {
+    response = await fetch(url, { method: 'GET', headers });
+  } catch (networkErr) {
+    const err = new Error(
+      `Cannot connect to backend server at ${API_BASE_URL} to download document.`
+    );
+    err.isNetworkError = true;
+    err.originalError = networkErr;
+    throw err;
+  }
+
+  if (!response.ok) {
+    let message = `Document download failed (${response.status}).`;
+    try {
+      const errData = await response.json();
+      message = errData?.detail || errData?.message || message;
+    } catch {}
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get('content-disposition') || '';
+  const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^";\n]+)"?/i);
+  const filename = (match && match[1]) || fallbackFilename || 'TrustDoc_Document.pdf';
+
+  const blobUrl = URL.createObjectURL(blob);
+  if (openInNewTab) {
+    window.open(blobUrl, '_blank', 'noopener,noreferrer');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  } else {
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  }
+  return { filename };
+}
 
 export const documentService = {
-  // HR issuing a new document
+  // HR issuing a new document (real DB persistence & PDF/QR generation)
   issueDocument: async (documentData) => {
-    try {
-      return await apiClient.post('/api/documents/', documentData);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch') ||
-        err.message?.toLowerCase().includes('network')
-      ) {
-        const vId = `TD-VFY-${Math.floor(100000 + Math.random() * 900000)}`;
-        return {
-          id: vId,
-          verification_id: vId,
-          reference_number: `TD/HR/${new Date().getFullYear()}/${Math.floor(100 + Math.random() * 900)}`,
-          transaction_hash: '0x8f3a2e4d6c7b9e1f5a0c3b8e2d4f6a7b9c1d3e5f7a0b2c4d6e8f1a3b5c7d9e2a',
-          status: 'verified',
-          created_at: new Date().toISOString(),
-          ...documentData
-        };
-      }
-      throw err;
-    }
+    return await apiClient.post('/api/documents/', documentData);
   },
 
-  // HR viewing issued documents
+  // HR viewing issued documents (real DB records)
   getIssuedDocuments: async (params = {}) => {
-    try {
-      const query = new URLSearchParams();
-      if (params.search) query.append('search', params.search);
-      if (params.type && params.type !== 'all') query.append('type', params.type);
-      if (params.status && params.status !== 'all') query.append('status', params.status);
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.type && params.type !== 'all') query.append('type', params.type);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
 
-      const queryString = query.toString();
-      const endpoint = `/api/documents/${queryString ? `?${queryString}` : ''}`;
-      return await apiClient.get(endpoint);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch') ||
-        err.message?.toLowerCase().includes('network')
-      ) {
-        return [
-          {
-            id: 'VC-2025-001',
-            verification_id: 'VC-2025-001',
-            reference_number: 'Ref No: TD/HR/2025/001',
-            document_type: 'offer_letter',
-            recipient_name: 'Sagar Lavate',
-            recipient_email: 'sagar.lavate@email.com',
-            recipient_phone: '+91 98765 43210',
-            employee_id: 'EMP-1092',
-            designation: 'Full Stack Developer',
-            department: 'Development',
-            employment_type: 'Full Time',
-            start_date: '2025-05-01',
-            compensation: '₹ 6,00,000',
-            monthly_salary: '₹ 50,000',
-            location: 'Pune, Maharashtra',
-            reporting_manager: 'Rohan Deshmukh',
-            acceptance_deadline: '2025-04-22',
-            issue_date: '2025-04-15',
-            custom_description: 'We are delighted to extend this offer of employment for the position of Full Stack Developer. This offer includes comprehensive benefits, medical coverage, and annual bonuses subject to performance evaluations.',
-            status: 'verified',
-            transaction_hash: '0x8f3a2e4d6c7b9e1f5a0c3b8e2d4f6a7b9c1d3e5f7a0b2c4d6e8f1a3b5c7d9e2a'
-          },
-          {
-            id: 'VC-2025-002',
-            verification_id: 'VC-2025-002',
-            reference_number: 'Ref No: TD/LOI/2025/002',
-            document_type: 'letter_of_intent',
-            recipient_name: 'Priya Sharma',
-            recipient_email: 'priya.sharma@email.com',
-            recipient_phone: '+91 98220 12345',
-            employee_id: 'EMP-1093',
-            designation: 'Senior UI/UX Designer',
-            department: 'Design',
-            employment_type: 'Full Time',
-            start_date: '2025-06-01',
-            compensation: '₹ 8,50,000',
-            monthly_salary: '₹ 70,833',
-            location: 'Pune, Maharashtra',
-            reporting_manager: 'Rohan Deshmukh',
-            acceptance_deadline: '2025-05-15',
-            issue_date: '2025-04-12',
-            custom_description: 'This Letter of Intent formally records our mutual interest to bring you on board as Senior UI/UX Designer. A formal appointment letter will be issued on completion of onboarding procedures.',
-            status: 'verified',
-            transaction_hash: '0x4c2b1a9e8f7d6c5b4a3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a'
-          },
-          {
-            id: 'VC-2025-003',
-            verification_id: 'VC-2025-003',
-            reference_number: 'Ref No: TD/EXP/2025/003',
-            document_type: 'experience_letter',
-            recipient_name: 'Amit Patel',
-            recipient_email: 'amit.patel@email.com',
-            recipient_phone: '+91 97110 54321',
-            employee_id: 'EMP-1094',
-            designation: 'Blockchain Engineer',
-            department: 'Core Infrastructure',
-            employment_type: 'Full Time',
-            start_date: '2022-03-01',
-            end_date: '2025-03-31',
-            location: 'Pune, Maharashtra',
-            reporting_manager: 'Rohan Deshmukh',
-            issue_date: '2025-04-01',
-            custom_description: 'This is to certify that Amit Patel has worked as Blockchain Engineer from March 1, 2022 to March 31, 2025. Their character, technical innovation, and dedication were exemplary throughout.',
-            status: 'verified',
-            transaction_hash: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b'
-          },
-          {
-            id: 'VC-2025-004',
-            verification_id: 'VC-2025-004',
-            reference_number: 'Ref No: TD/REL/2025/004',
-            document_type: 'relieving_letter',
-            recipient_name: 'Ananya Deshmukh',
-            recipient_email: 'ananya.deshmukh@email.com',
-            recipient_phone: '+91 99001 22334',
-            employee_id: 'EMP-1095',
-            designation: 'QA Automation Lead',
-            department: 'Quality Assurance',
-            employment_type: 'Full Time',
-            start_date: '2021-08-15',
-            end_date: '2025-03-15',
-            resignation_date: '2025-02-01',
-            location: 'Pune, Maharashtra',
-            reporting_manager: 'Rohan Deshmukh',
-            issue_date: '2025-03-16',
-            custom_description: 'This letter confirms acceptance of resignation effective March 15, 2025. All company assets have been surrendered and final settlements processed with no outstanding liabilities.',
-            status: 'verified',
-            transaction_hash: '0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e'
-          }
-        ];
-      }
-      throw err;
-    }
+    const queryString = query.toString();
+    const endpoint = `/api/documents/${queryString ? `?${queryString}` : ''}`;
+    return await apiClient.get(endpoint);
   },
 
-  // Employee viewing their own issued documents
+  // Employee viewing their own issued documents (real backend DB records)
   getMyDocuments: async (params = {}) => {
-    try {
-      const query = new URLSearchParams();
-      if (params.search) query.append('search', params.search);
-      if (params.type && params.type !== 'all') query.append('type', params.type);
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.type && params.type !== 'all') query.append('type', params.type);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
 
-      const queryString = query.toString();
-      const endpoint = `/api/employee/documents/${queryString ? `?${queryString}` : ''}`;
-      return await apiClient.get(endpoint);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch') ||
-        err.message?.toLowerCase().includes('network')
-      ) {
-        return [
-          {
-            id: 'VC-2025-001',
-            verification_id: 'VC-2025-001',
-            reference_number: 'Ref No: TD/HR/2025/001',
-            document_type: 'offer_letter',
-            recipient_name: 'Sagar Lavate',
-            recipient_email: 'sagar.lavate@email.com',
-            recipient_phone: '+91 98765 43210',
-            employee_id: 'EMP-1092',
-            designation: 'Full Stack Developer',
-            department: 'Development',
-            employment_type: 'Full Time',
-            start_date: '2025-05-01',
-            compensation: '₹ 6,00,000',
-            monthly_salary: '₹ 50,000',
-            location: 'Pune, Maharashtra',
-            reporting_manager: 'Rohan Deshmukh',
-            acceptance_deadline: '2025-04-22',
-            issue_date: '2025-04-15',
-            status: 'verified',
-            issuer_name: 'TrustDoc Technologies',
-            transaction_hash: '0x8f3a2e4d6c7b9e1f5a0c3b8e2d4f6a7b9c1d3e5f7a0b2c4d6e8f1a3b5c7d9e2a'
-          }
-        ];
-      }
-      throw err;
-    }
+    const queryString = query.toString();
+    const endpoint = `/api/employee/documents/${queryString ? `?${queryString}` : ''}`;
+    return await apiClient.get(endpoint);
+  },
+
+  // Employee inspecting single issued document details (ownership verified on backend)
+  getEmployeeDocumentById: async (id) => {
+    const cleanId = encodeURIComponent(String(id).trim());
+    return await apiClient.get(`/api/employee/documents/${cleanId}/`);
+  },
+
+  // Authenticated secure file download for employee documents
+  downloadEmployeeDocument: async (id, options = {}) => {
+    const cleanId = encodeURIComponent(String(id).trim());
+    return await downloadAuthenticatedFile(
+      `${API_BASE_URL}/api/employee/documents/${cleanId}/download/`,
+      { fallbackFilename: `TrustDoc_${id}.pdf`, ...options }
+    );
+  },
+
+  // Authenticated secure file download for HR / shared documents
+  downloadIssuedDocument: async (id, options = {}) => {
+    const cleanId = encodeURIComponent(String(id).trim());
+    return await downloadAuthenticatedFile(
+      `${API_BASE_URL}/api/documents/${cleanId}/download/`,
+      { fallbackFilename: `TrustDoc_${id}.pdf`, ...options }
+    );
   },
 
   // Single document inspection
   getDocumentById: async (id) => {
-    try {
-      return await apiClient.get(`/api/documents/${id}/`);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch') ||
-        err.message?.toLowerCase().includes('network')
-      ) {
-        return {
-          id: id || 'VC-2025-001',
-          verification_id: id || 'VC-2025-001',
-          reference_number: 'Ref No: TD/HR/2025/001',
-          document_type: 'offer_letter',
-          recipient_name: 'Sagar Lavate',
-          recipient_email: 'sagar.lavate@email.com',
-          recipient_phone: '+91 98765 43210',
-          employee_id: 'EMP-1092',
-          designation: 'Full Stack Developer',
-          department: 'Development',
-          employment_type: 'Full Time',
-          start_date: '2025-05-01',
-          compensation: '₹ 6,00,000',
-          monthly_salary: '₹ 50,000',
-          location: 'Pune, Maharashtra',
-          reporting_manager: 'Rohan Deshmukh',
-          acceptance_deadline: '2025-04-22',
-          issue_date: '2025-04-15',
-          status: 'verified',
-          issuer_name: 'TrustDoc Technologies',
-          transaction_hash: '0x8f3a2e4d6c7b9e1f5a0c3b8e2d4f6a7b9c1d3e5f7a0b2c4d6e8f1a3b5c7d9e2a'
-        };
-      }
-      throw err;
-    }
+    const cleanId = encodeURIComponent(String(id).trim());
+    return await apiClient.get(`/api/documents/${cleanId}/`);
   },
 
   // HR revoking a document
   revokeDocument: async (id, reason) => {
-    return await apiClient.post(`/api/documents/${id}/revoke/`, { reason });
+    const cleanId = encodeURIComponent(String(id).trim());
+    return await apiClient.post(`/api/documents/${cleanId}/revoke/`, { reason });
   }
 };

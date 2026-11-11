@@ -24,6 +24,7 @@ export const EmployeeManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
 
   // Add Employee Modal
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -47,7 +48,8 @@ export const EmployeeManagementPage = () => {
     setError(null);
     try {
       const response = await employeeService.getEmployees({
-        search: searchQuery.trim() || undefined
+        search: searchQuery.trim() || undefined,
+        department: departmentFilter !== 'all' ? departmentFilter : undefined
       });
       const list = Array.isArray(response) ? response : response?.results || [];
       setEmployees(list);
@@ -56,7 +58,7 @@ export const EmployeeManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, departmentFilter]);
 
   useEffect(() => {
     fetchEmployees();
@@ -111,19 +113,37 @@ export const EmployeeManagementPage = () => {
       <div className="content-card-panel animate-fade-in">
         {/* Search & Header */}
         <div className="panel-header-row">
-          <div style={{ position: 'relative', width: '320px' }}>
-            <Search
-              size={16}
-              style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-            />
-            <input
-              type="text"
-              placeholder="Search by name, email, or employee ID..."
-              className="form-control"
-              style={{ paddingLeft: '2.4rem', fontSize: '0.85rem', height: '38px' }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ position: 'relative', width: '280px' }}>
+              <Search
+                size={16}
+                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
+              />
+              <input
+                type="text"
+                placeholder="Search by name, email, or employee ID..."
+                className="form-control"
+                style={{ paddingLeft: '2.4rem', fontSize: '0.85rem', height: '38px' }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <select
+              className="form-control form-select"
+              style={{ width: '175px', height: '38px', fontSize: '0.85rem' }}
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+            >
+              <option value="all">All Departments</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Development">Development</option>
+              <option value="Design">Design</option>
+              <option value="Product">Product</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Quality Assurance">Quality Assurance</option>
+              <option value="Operations">Operations</option>
+            </select>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>

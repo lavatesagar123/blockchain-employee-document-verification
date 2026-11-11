@@ -41,6 +41,20 @@ class IsHRAdmin(IsActiveUser):
         return request.user.role == User.ROLE_HR
 
 
+class IsApprovedHRAdmin(IsHRAdmin):
+    """Restrict HR operational endpoints to HR Administrators of Super-Admin-approved companies."""
+
+    message = 'Company registration is pending Super Admin approval. Operational HR features are locked.'
+
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        hr_profile = getattr(request.user, 'hr_profile', None)
+        if not hr_profile or not hr_profile.company:
+            return False
+        return hr_profile.company.status == 'approved'
+
+
 class IsSuperAdmin(IsActiveUser):
     """Restrict access to Super Admin users."""
 

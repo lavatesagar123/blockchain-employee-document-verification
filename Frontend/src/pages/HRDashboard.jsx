@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { HRLayout } from '../layouts/HRLayout';
 import { useAuth } from '../context/AuthContext';
 import { companyService } from '../services/companyService';
-import { documentService } from '../services/documentService';
-import { employeeService } from '../services/employeeService';
 import { useToast } from '../components/Toast';
 import { StatusBadge } from '../components/StatusBadge';
 import { LoadingState } from '../components/LoadingState';
@@ -27,6 +25,7 @@ export const HRDashboard = () => {
   const { addToast } = useToast();
 
   const [companyProfile, setCompanyProfile] = useState(null);
+  const [stats, setStats] = useState(null);
   const [issuedDocs, setIssuedDocs] = useState([]);
   const [employeesCount, setEmployeesCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -37,34 +36,24 @@ export const HRDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const [profileRes, docsRes, empsRes] = await Promise.allSettled([
+      const [profileRes, statsRes] = await Promise.allSettled([
         companyService.getCompanyProfile(),
-        documentService.getIssuedDocuments(),
-        employeeService.getEmployees()
+        companyService.getHRDashboardStats()
       ]);
 
       if (profileRes.status === 'fulfilled') {
         setCompanyProfile(profileRes.value);
-      } else {
-        // Fallback to auth payload company details if company/me endpoint not yet created
-        setCompanyProfile(user?.companyDetails || {
-          name: user?.companyName,
-          status: user?.companyStatus || user?.companyDetails?.status || 'pending'
-        });
       }
 
-      if (docsRes.status === 'fulfilled') {
-        const docs = Array.isArray(docsRes.value) ? docsRes.value : docsRes.value?.results || [];
-        setIssuedDocs(docs);
+      if (statsRes.status === 'fulfilled') {
+        const s = statsRes.value;
+        setStats(s);
+        setEmployeesCount(s.total_employees ?? 0);
+        setIssuedDocs(Array.isArray(s.recent_documents) ? s.recent_documents : []);
       }
 
-      if (empsRes.status === 'fulfilled') {
-        const emps = Array.isArray(empsRes.value) ? empsRes.value : empsRes.value?.results || [];
-        setEmployeesCount(emps.length);
-      }
-
-      if (profileRes.status === 'rejected' && docsRes.status === 'rejected') {
-        setError(profileRes.reason?.message || 'Unable to connect to HR service.');
+      if (profileRes.status === 'rejected' && statsRes.status === 'rejected') {
+        setError(profileRes.reason?.message || 'Unable to connect to HR backend service.');
       }
     } catch (err) {
       setError(err.message || 'Error loading HR workspace data.');
@@ -72,7 +61,7 @@ export const HRDashboard = () => {
       setLoading(false);
       setChecking(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchHRData();
@@ -228,7 +217,7 @@ export const HRDashboard = () => {
             <div className="stat-metric-card" style={{ '--card-accent': '#8b5cf6' }}>
               <div>
                 <div className="stat-info-title">Issued Credentials</div>
-                <div className="stat-numeric-value">{issuedDocs.length}</div>
+                <div className="stat-numeric-value">{stats?.total_documents ?? issuedDocs.length}</div>
               </div>
               <div className="stat-icon-wrapper stat-icon-purple">
                 <FileText size={24} />

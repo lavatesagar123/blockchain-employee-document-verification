@@ -228,17 +228,22 @@ export const DocumentIssuancePage = () => {
     }
   };
 
-  // Export PDF handler
-  const handleDownloadPdf = async (nodeId, filenamePrefix) => {
+  // Export PDF handler (prefers real backend multi-page QR PDF after issuance)
+  const handleDownloadPdf = async (nodeId) => {
     setIsDownloadingPdf(true);
     try {
       const docLabel = getDocumentTypeLabel(formData.documentType).replace(/\s+/g, '_');
       const recipient = formData.recipientName.replace(/\s+/g, '_') || 'Employee';
       const filename = `${docLabel}_${recipient}.pdf`;
-      await downloadCertificateAsPdf(nodeId || 'live-issuance-certificate-node', { filename });
-      addToast('Certificate PDF generated and downloaded successfully!', 'success');
+      const docId = issuedResult?.verification_id || issuedResult?.id;
+      if (docId) {
+        await documentService.downloadIssuedDocument(docId, { fallbackFilename: filename });
+      } else {
+        await downloadCertificateAsPdf(nodeId || 'live-issuance-certificate-node', { filename });
+      }
+      addToast('Certificate PDF downloaded successfully!', 'success');
     } catch (err) {
-      addToast('Failed to generate PDF. You can also use the Print button.', 'error');
+      addToast(err.message || 'Failed to download PDF. You can also use the Print button.', 'error');
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -246,22 +251,27 @@ export const DocumentIssuancePage = () => {
 
   const handleOpenPdf = async (nodeId) => {
     try {
-      await openCertificateInNewTab(nodeId || 'live-issuance-certificate-node');
+      const docId = issuedResult?.verification_id || issuedResult?.id;
+      if (docId) {
+        await documentService.downloadIssuedDocument(docId, { openInNewTab: true });
+      } else {
+        await openCertificateInNewTab(nodeId || 'live-issuance-certificate-node');
+      }
       addToast('Opening certificate PDF in new tab...', 'info');
     } catch (err) {
-      addToast('Failed to open PDF. Try downloading instead.', 'error');
+      addToast(err.message || 'Failed to open PDF. Try downloading instead.', 'error');
     }
   };
 
   // Company details context / props
   const companyDetails = {
-    name: user?.companyName || user?.companyDetails?.name || 'TrustDoc Technologies',
+    name: user?.companyName || user?.companyDetails?.name || 'Organization',
     tagline: user?.companyDetails?.tagline || 'Secure Documents | Trusted Future',
-    address: user?.companyDetails?.address || 'TrustDoc Technologies\nPune, Maharashtra - 411001',
-    email: user?.companyDetails?.email || 'hr@trustdoc.com',
-    website: user?.companyDetails?.website || 'www.trustdoc.com',
-    city: formData.workLocation.split(',')[0].trim() || 'Pune',
-    signatory_name: user?.name || 'Rohan Deshmukh',
+    address: user?.companyDetails?.address || '',
+    email: user?.companyDetails?.email || '',
+    website: user?.companyDetails?.website || '',
+    city: user?.companyDetails?.city || formData.workLocation.split(',')[0].trim() || '',
+    signatory_name: user?.name || '',
     signatory_role: user?.designation || 'HR Manager'
   };
 

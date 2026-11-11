@@ -26,10 +26,11 @@ export const CompanyProfilePage = () => {
   const { addToast } = useToast();
 
   const [company, setCompany] = useState(null);
+  const [hrProfile, setHrProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Edit modal
+  // Edit Company Modal
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     phone: '',
@@ -38,31 +39,27 @@ export const CompanyProfilePage = () => {
   });
   const [saving, setSaving] = useState(false);
 
+  // Edit HR Profile Modal
+  const [hrEditOpen, setHrEditOpen] = useState(false);
+  const [hrEditForm, setHrEditForm] = useState({ name: '', phone: '', designation: '' });
+  const [hrSaving, setHrSaving] = useState(false);
+
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await companyService.getCompanyProfile();
-      setCompany(data);
+      const [compData, hrData] = await Promise.all([
+        companyService.getCompanyProfile(),
+        companyService.getHRProfile().catch(() => null)
+      ]);
+      setCompany(compData);
+      if (hrData) setHrProfile(hrData);
     } catch (err) {
-      if (user?.companyDetails || user?.companyName) {
-        setCompany({
-          name: user.companyName,
-          email: user.email,
-          phone: user.phone || '—',
-          address: 'Corporate Headquarters',
-          registration_number: 'CIN-PENDING-AUDIT',
-          status: user.companyStatus || 'pending',
-          hr_name: user.name,
-          hr_email: user.email
-        });
-      } else {
-        setError(err.message || 'Failed to load company profile from API.');
-      }
+      setError(err.message || 'Failed to load company profile from API.');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchProfile();
@@ -91,6 +88,35 @@ export const CompanyProfilePage = () => {
       addToast(err.message || 'Update failed.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOpenHrEdit = () => {
+    setHrEditForm({
+      name: hrProfile?.name || company?.hr_name || user?.name || '',
+      phone: hrProfile?.phone || user?.phone || '',
+      designation: hrProfile?.designation || company?.hr_designation || user?.designation || 'HR Manager'
+    });
+    setHrEditOpen(true);
+  };
+
+  const handleSaveHrEdit = async (e) => {
+    e.preventDefault();
+    setHrSaving(true);
+    try {
+      const updated = await companyService.updateHRProfile(hrEditForm);
+      setHrProfile(updated);
+      setCompany((prev) =>
+        prev
+          ? { ...prev, hr_name: updated.name, hr_designation: updated.designation }
+          : prev
+      );
+      addToast('HR Administrator profile updated.', 'success');
+      setHrEditOpen(false);
+    } catch (err) {
+      addToast(err.message || 'HR profile update failed.', 'error');
+    } finally {
+      setHrSaving(false);
     }
   };
 
@@ -127,15 +153,27 @@ export const CompanyProfilePage = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleOpenEdit}
-              disabled={loading || !company}
-              className="btn btn-outline-emerald btn-sm"
-            >
-              <Edit2 size={14} />
-              <span>Edit Profile</span>
-            </button>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={handleOpenHrEdit}
+                disabled={loading || !company}
+                className="btn btn-secondary btn-sm"
+              >
+                <User size={14} />
+                <span>Edit HR Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenEdit}
+                disabled={loading || !company}
+                className="btn btn-outline-emerald btn-sm"
+              >
+                <Edit2 size={14} />
+                <span>Edit Company</span>
+              </button>
+            </div>
           </div>
 
           {/* Incorporation Details Panel */}
@@ -253,6 +291,56 @@ export const CompanyProfilePage = () => {
             value={editForm.address}
             onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
             placeholder="Complete street address"
+          />
+        </form>
+      </Modal>
+
+      {/* Edit HR Administrator Profile Modal */}
+      <Modal
+        isOpen={hrEditOpen}
+        onClose={() => setHrEditOpen(false)}
+        title="Edit HR Administrator Profile"
+        footer={
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setHrEditOpen(false)}
+              disabled={hrSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSaveHrEdit}
+              disabled={hrSaving}
+            >
+              {hrSaving ? 'Saving...' : 'Save HR Profile'}
+            </button>
+          </>
+        }
+      >
+        <form onSubmit={handleSaveHrEdit}>
+          <FormField
+            label="HR Administrator Name"
+            name="hr_name"
+            value={hrEditForm.name}
+            onChange={(e) => setHrEditForm({ ...hrEditForm, name: e.target.value })}
+            required
+          />
+          <FormField
+            label="Designation / Title"
+            name="hr_designation"
+            value={hrEditForm.designation}
+            onChange={(e) => setHrEditForm({ ...hrEditForm, designation: e.target.value })}
+          />
+          <FormField
+            label="Direct Phone"
+            name="hr_phone"
+            type="tel"
+            value={hrEditForm.phone}
+            onChange={(e) => setHrEditForm({ ...hrEditForm, phone: e.target.value })}
           />
         </form>
       </Modal>

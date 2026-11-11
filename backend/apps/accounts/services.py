@@ -95,5 +95,31 @@ class AuthService:
                     'company_name': company_name,
                     'companyName': company_name,
                 })
+        elif user.role == User.ROLE_HR:
+            hr_profile = getattr(user, 'hr_profile', None)
+            if hr_profile:
+                company = hr_profile.company
+                payload.update({
+                    'designation': hr_profile.designation,
+                    'phone': hr_profile.phone,
+                    'company_id': company.id if company else None,
+                    'company_name': company.name if company else '',
+                    'companyName': company.name if company else '',
+                    'company_status': company.status if company else 'pending',
+                    'companyStatus': company.status if company else 'pending',
+                    'companyDetails': {
+                        'id': company.id,
+                        'name': company.name,
+                        'registration_number': company.registration_number,
+                        'email': company.email,
+                        'phone': company.phone,
+                        'website': company.website,
+                        'address': company.address,
+                        'city': company.city,
+                        'tagline': company.tagline,
+                        'status': company.status,
+                        'remarks': company.remarks,
+                    } if company else None,
+                })
 
         return payload

@@ -24,13 +24,41 @@ class Company(models.Model):
     email = models.EmailField(max_length=255)
     phone = models.CharField(max_length=30, blank=True, default='')
     website = models.CharField(max_length=255, blank=True, default='')
+    industry = models.CharField(max_length=120, blank=True, default='')
+    company_size = models.CharField(max_length=50, blank=True, default='')
+    street_address = models.CharField(max_length=255, blank=True, default='')
     address = models.TextField(blank=True, default='')
     city = models.CharField(max_length=100, blank=True, default='')
+    state = models.CharField(max_length=100, blank=True, default='')
+    postal_code = models.CharField(max_length=30, blank=True, default='')
+    country = models.CharField(max_length=100, blank=True, default='India')
     tagline = models.CharField(
         max_length=255,
         blank=True,
         default='Secure Documents | Trusted Future',
     )
+    remarks = models.TextField(blank=True, default='')
+    certificate_of_incorporation = models.FileField(
+        upload_to='company_docs/incorporation/%Y/%m/',
+        null=True,
+        blank=True,
+    )
+    tax_id_document = models.FileField(
+        upload_to='company_docs/tax/%Y/%m/',
+        null=True,
+        blank=True,
+    )
+    address_proof = models.FileField(
+        upload_to='company_docs/address/%Y/%m/',
+        null=True,
+        blank=True,
+    )
+    hr_authorization_letter = models.FileField(
+        upload_to='company_docs/auth/%Y/%m/',
+        null=True,
+        blank=True,
+    )
+    logo = models.ImageField(upload_to='company_logos/', null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

@@ -114,12 +114,16 @@ class IssuedDocument(models.Model):
 class DocumentAuditLog(models.Model):
     """Audit trail recording authenticated document inspections and downloads."""
 
+    ACTION_ISSUED = 'issued'
     ACTION_VIEWED = 'viewed'
     ACTION_DOWNLOADED = 'downloaded'
+    ACTION_REVOKED = 'revoked'
 
     ACTION_CHOICES = [
+        (ACTION_ISSUED, 'Issued'),
         (ACTION_VIEWED, 'Viewed'),
         (ACTION_DOWNLOADED, 'Downloaded'),
+        (ACTION_REVOKED, 'Revoked'),
     ]
 
     document = models.ForeignKey(

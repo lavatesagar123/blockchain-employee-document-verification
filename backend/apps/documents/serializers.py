@@ -1,11 +1,12 @@
-"""Serializers for employee document portfolio and inspection endpoints."""
+"""Serializers for employee & HR document issuance, listing, inspection, and revocation."""
 
+from django.conf import settings
 from rest_framework import serializers
 from .models import IssuedDocument
 
 
 class EmployeeDocumentSerializer(serializers.ModelSerializer):
-    """Serializer returning all fields expected by React EmployeeDashboard, MyDocumentsPage, and DocumentDetailsPage."""
+    """Read serializer matching React DocumentCertificate, DocumentInfoPanel, and registry tables."""
 
     issuer_name = serializers.SerializerMethodField()
     company_name = serializers.SerializerMethodField()
@@ -18,6 +19,7 @@ class EmployeeDocumentSerializer(serializers.ModelSerializer):
     ref_no = serializers.CharField(source='reference_number', read_only=True)
     has_file = serializers.SerializerMethodField()
     download_url = serializers.SerializerMethodField()
+    verification_url = serializers.SerializerMethodField()
 
     class Meta:
         model = IssuedDocument
@@ -63,6 +65,7 @@ class EmployeeDocumentSerializer(serializers.ModelSerializer):
             'created_at',
             'has_file',
             'download_url',
+            'verification_url',
         ]
         read_only_fields = fields
 
@@ -101,4 +104,70 @@ class EmployeeDocumentSerializer(serializers.ModelSerializer):
         return bool(obj.file)
 
     def get_download_url(self, obj):
-        return f'/api/employee/documents/{obj.verification_id}/download/'
+        return f'/api/documents/{obj.verification_id}/download/'
+
+    def get_verification_url(self, obj):
+        base_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:5173')
+        return f'{base_url}/verify?id={obj.verification_id}'
+
+
+class DocumentIssuanceSerializer(serializers.Serializer):
+    """Validates HR document creation payload (Offer, LOI, Experience, Relieving)."""
+
+    document_type = serializers.ChoiceField(choices=IssuedDocument.DOCUMENT_TYPE_CHOICES)
+    recipient_name = serializers.CharField(max_length=255)
+    recipient_email = serializers.EmailField(max_length=255)
+    recipient_phone = serializers.CharField(max_length=30, required=False, allow_blank=True, default='')
+    employee_id = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
+    designation = serializers.CharField(max_length=150)
+    department = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    employment_type = serializers.CharField(max_length=50, required=False, allow_blank=True, default='Full Time')
+
+    start_date = serializers.DateField(required=False, allow_null=True)
+    end_date = serializers.DateField(required=False, allow_null=True)
+    resignation_date = serializers.DateField(required=False, allow_null=True)
+    acceptance_deadline = serializers.DateField(required=False, allow_null=True)
+
+    compensation = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    monthly_salary = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    location = serializers.CharField(max_length=200, required=False, allow_blank=True, default='')
+    reporting_manager = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
+    signatory_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
+    signatory_role = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    custom_description = serializers.CharField(required=False, allow_blank=True, default='')
+    customDescription = serializers.CharField(required=False, allow_blank=True, default='')
+    remarks = serializers.CharField(required=False, allow_blank=True, default='')
+    file = serializers.FileField(required=False, allow_null=True)
+
+    def validate_file(self, value):
+        if value is None:
+            return None
+        max_bytes = 10 * 1024 * 1024  # 10 MB
+        if value.size > max_bytes:
+            raise serializers.ValidationError('Attachment size must not exceed 10 MB.')
+        allowed_ext = ('.pdf', '.png', '.jpg', '.jpeg')
+        if not value.name.lower().endswith(allowed_ext):
+            raise serializers.ValidationError('Only PDF, PNG, and JPG files are allowed.')
+        return value
+
+    def validate(self, attrs):
+        doc_type = attrs.get('document_type')
+        if doc_type in (IssuedDocument.TYPE_EXPERIENCE, IssuedDocument.TYPE_RELIEVING) and not attrs.get('end_date'):
+            raise serializers.ValidationError({
+                'end_date': 'End / relieving date is required for experience and relieving letters.'
+            })
+        if not attrs.get('custom_description') and attrs.get('customDescription'):
+            attrs['custom_description'] = attrs['customDescription']
+        return attrs
+
+
+class DocumentRevokeSerializer(serializers.Serializer):
+    """Validates document revocation reason."""
+
+    reason = serializers.CharField(max_length=1000)
+
+    def validate_reason(self, value):
+        cleaned = value.strip()
+        if not cleaned:
+            raise serializers.ValidationError('Revocation reason cannot be empty.')
+        return cleaned

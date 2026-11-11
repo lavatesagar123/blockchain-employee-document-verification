@@ -100,6 +100,7 @@ class EmployeeService:
         if 'name' in validated_data and validated_data['name']:
             user.name = validated_data['name'].strip()
             user.save(update_fields=['name', 'updated_at'])
+            profile.user = user
 
         editable_fields = ['phone', 'designation', 'department', 'location', 'bio', 'linkedin_url']
         updated_profile_fields = []

@@ -9,7 +9,7 @@ import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { formatDate, getDocumentTypeLabel, truncateHash } from '../utils/formatters';
 import { DocumentCertificate } from '../components/DocumentCertificate';
-import { downloadCertificateAsPdf, openCertificateInNewTab, printCertificate } from '../utils/pdfGenerator';
+import { printCertificate } from '../utils/pdfGenerator';
 import {
   FileText,
   FilePlus,
@@ -222,6 +222,26 @@ export const IssuedDocumentsPage = () => {
                             <Eye size={13} /> View
                           </button>
 
+                          <button
+                            type="button"
+                            className="btn btn-outline-emerald btn-sm"
+                            onClick={async () => {
+                              try {
+                                const label = getDocumentTypeLabel(doc.document_type || doc.type).replace(/\s+/g, '_');
+                                const docId = doc.verification_id || doc.id;
+                                const res = await documentService.downloadIssuedDocument(docId, {
+                                  fallbackFilename: `${label}_${docId}.pdf`
+                                });
+                                addToast(`Downloaded ${res.filename}`, 'success');
+                              } catch (err) {
+                                addToast(err.message || 'Failed to download PDF.', 'error');
+                              }
+                            }}
+                            title="Download Secure PDF"
+                          >
+                            <Download size={13} />
+                          </button>
+
                           {doc.status !== 'revoked' && (
                             <button
                               type="button"
@@ -266,11 +286,16 @@ export const IssuedDocumentsPage = () => {
                 type="button"
                 onClick={async () => {
                   if (!viewDoc) return;
-                  await openCertificateInNewTab('issued-registry-cert-node');
-                  addToast('Opening certificate PDF in new tab...', 'info');
+                  try {
+                    const docId = viewDoc.verification_id || viewDoc.id;
+                    await documentService.downloadIssuedDocument(docId, { openInNewTab: true });
+                    addToast('Opening certificate PDF in new tab...', 'info');
+                  } catch (err) {
+                    addToast(err.message || 'Failed to open PDF.', 'error');
+                  }
                 }}
                 className="btn btn-outline-emerald btn-sm"
-                title="Open unclipped PDF in new browser tab"
+                title="Open complete unclipped PDF in new tab"
               >
                 <ExternalLink size={14} />
                 <span>Open PDF</span>
@@ -280,10 +305,15 @@ export const IssuedDocumentsPage = () => {
                 type="button"
                 onClick={async () => {
                   if (!viewDoc) return;
-                  const label = getDocumentTypeLabel(viewDoc.document_type || viewDoc.type).replace(/\s+/g, '_');
-                  const name = (viewDoc.recipient_name || viewDoc.employee_name || 'Doc').replace(/\s+/g, '_');
-                  await downloadCertificateAsPdf('issued-registry-cert-node', { filename: `${label}_${name}.pdf` });
-                  addToast('PDF downloaded successfully!', 'success');
+                  try {
+                    const docId = viewDoc.verification_id || viewDoc.id;
+                    const label = getDocumentTypeLabel(viewDoc.document_type || viewDoc.type).replace(/\s+/g, '_');
+                    const name = (viewDoc.recipient_name || viewDoc.employee_name || 'Doc').replace(/\s+/g, '_');
+                    await documentService.downloadIssuedDocument(docId, { fallbackFilename: `${label}_${name}.pdf` });
+                    addToast('PDF downloaded successfully!', 'success');
+                  } catch (err) {
+                    addToast(err.message || 'Failed to download PDF.', 'error');
+                  }
                 }}
                 className="btn btn-primary btn-sm"
               >
@@ -318,12 +348,13 @@ export const IssuedDocumentsPage = () => {
                 previewId="issued-registry-cert-node"
                 documentData={viewDoc}
                 company={{
-                  name: viewDoc.issuer_name || viewDoc.company_name || 'TrustDoc Technologies',
-                  tagline: 'Secure Documents | Trusted Future',
-                  address: 'TrustDoc Technologies\nPune, Maharashtra - 411001',
-                  email: 'hr@trustdoc.com',
-                  website: 'www.trustdoc.com',
-                  signatory_name: viewDoc.signatory_name || 'Rohan Deshmukh',
+                  name: viewDoc.issuer_name || viewDoc.company_name || 'Organization',
+                  tagline: viewDoc.company_tagline || 'Secure Documents | Trusted Future',
+                  address: viewDoc.company_address || viewDoc.location || '',
+                  email: viewDoc.company_email || '',
+                  website: viewDoc.company_website || '',
+                  city: viewDoc.company_city || '',
+                  signatory_name: viewDoc.signatory_name || viewDoc.reporting_manager || '',
                   signatory_role: viewDoc.signatory_role || 'HR Manager'
                 }}
                 isDraft={false}
