@@ -186,120 +186,29 @@ export const companyService = {
     return await apiClient.get('/api/hr/dashboard/stats/');
   },
 
-  // Super Admin listing companies (with optional query filters: search, status, page)
+  // Super Admin listing companies (real DB records with pagination, search, status)
   getCompanies: async (params = {}) => {
     const query = new URLSearchParams();
     if (params.search) query.append('search', params.search);
     if (params.status && params.status !== 'all') query.append('status', params.status);
     if (params.page) query.append('page', params.page);
+    if (params.page_size) query.append('page_size', params.page_size);
 
     const queryString = query.toString();
     const endpoint = `/api/admin/companies/${queryString ? `?${queryString}` : ''}`;
-    try {
-      return await apiClient.get(endpoint);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch') ||
-        err.message?.toLowerCase().includes('network')
-      ) {
-        const localList = getStoredRegistrations();
-        if (params.status && params.status !== 'all') {
-          return localList.filter((c) => c.status === params.status);
-        }
-        if (params.search) {
-          const q = params.search.toLowerCase();
-          return localList.filter(
-            (c) =>
-              c.name?.toLowerCase().includes(q) ||
-              c.email?.toLowerCase().includes(q) ||
-              c.registration_number?.toLowerCase().includes(q)
-          );
-        }
-        return localList;
-      }
-      throw err;
-    }
+    return await apiClient.get(endpoint);
   },
 
   getCompanyById: async (id) => {
-    try {
-      return await apiClient.get(`/api/admin/companies/${id}/`);
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch')
-      ) {
-        const list = getStoredRegistrations();
-        const found = list.find((c) => String(c.id) === String(id));
-        if (found) return found;
-      }
-      throw err;
-    }
+    return await apiClient.get(`/api/admin/companies/${id}/`);
   },
 
   approveCompany: async (id, remarks = '') => {
-    try {
-      const res = await apiClient.post(`/api/admin/companies/${id}/approve/`, { remarks });
-      return res;
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch')
-      ) {
-        const list = getStoredRegistrations();
-        const item = list.find((c) => String(c.id) === String(id));
-        if (item) {
-          item.status = 'approved';
-          item.remarks = remarks;
-          localStorage.setItem(REGISTERED_LIST_KEY, JSON.stringify(list));
-          try {
-            const currentPending = JSON.parse(localStorage.getItem(PENDING_REG_KEY) || 'null');
-            if (currentPending && String(currentPending.id) === String(id)) {
-              currentPending.status = 'approved';
-              currentPending.remarks = remarks;
-              localStorage.setItem(PENDING_REG_KEY, JSON.stringify(currentPending));
-            }
-          } catch {}
-          return item;
-        }
-      }
-      throw err;
-    }
+    return await apiClient.post(`/api/admin/companies/${id}/approve/`, { remarks });
   },
 
   rejectCompany: async (id, remarks) => {
-    try {
-      const res = await apiClient.post(`/api/admin/companies/${id}/reject/`, { remarks });
-      return res;
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch')
-      ) {
-        const list = getStoredRegistrations();
-        const item = list.find((c) => String(c.id) === String(id));
-        if (item) {
-          item.status = 'rejected';
-          item.remarks = remarks;
-          localStorage.setItem(REGISTERED_LIST_KEY, JSON.stringify(list));
-          try {
-            const currentPending = JSON.parse(localStorage.getItem(PENDING_REG_KEY) || 'null');
-            if (currentPending && String(currentPending.id) === String(id)) {
-              currentPending.status = 'rejected';
-              currentPending.remarks = remarks;
-              localStorage.setItem(PENDING_REG_KEY, JSON.stringify(currentPending));
-            }
-          } catch {}
-          return item;
-        }
-      }
-      throw err;
-    }
+    return await apiClient.post(`/api/admin/companies/${id}/reject/`, { remarks });
   },
 
   suspendCompany: async (id, remarks = '') => {
@@ -310,29 +219,8 @@ export const companyService = {
     return await apiClient.post(`/api/admin/companies/${id}/reactivate/`, {});
   },
 
-  // Super Admin KPI statistics
+  // Super Admin KPI statistics (real DB aggregates)
   getCompanyStats: async () => {
-    try {
-      return await apiClient.get('/api/admin/companies/stats/');
-    } catch (err) {
-      if (
-        err.isNetworkError ||
-        err.message?.toLowerCase().includes('connect') ||
-        err.message?.toLowerCase().includes('failed to fetch')
-      ) {
-        const list = getStoredRegistrations();
-        const total = list.length;
-        const pending = list.filter((c) => c.status === 'pending').length;
-        const approved = list.filter((c) => c.status === 'approved').length;
-        const rejected = list.filter((c) => c.status === 'rejected').length;
-        return {
-          total_companies: total,
-          pending_companies: pending,
-          approved_companies: approved,
-          rejected_companies: rejected
-        };
-      }
-      throw err;
-    }
+    return await apiClient.get('/api/admin/companies/stats/');
   }
 };

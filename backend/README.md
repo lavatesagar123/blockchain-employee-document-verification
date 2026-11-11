@@ -18,6 +18,7 @@ backend/
     ├── accounts/            # Custom User model, JWT auth, RBAC permissions, AuthService
     ├── employees/           # Company & EmployeeProfile models, registration, profile APIs
     ├── hr/                  # HRProfile, Company registration/profiles, workforce directory, HR stats
+    ├── superadmin/          # ActivityLog, Company moderation, User oversight, Document audit, KPIs
     └── documents/           # IssuedDocument, DocumentAuditLog, issuance, revocation, multi-page QR PDFs
 ```
 
@@ -84,10 +85,13 @@ Run Django migrations:
 python manage.py migrate
 ```
 
-Optionally create a Super Admin account:
+Optionally provision the platform Super Admin account (`username: admin`) via environment variables:
 
-```bash
-python manage.py createsuperuser
+```powershell
+$env:ADMIN_USERNAME="admin"
+$env:ADMIN_EMAIL="admin@trustdoc.local"
+$env:ADMIN_PASSWORD="your-strong-admin-password"
+python manage.py ensure_admin
 ```
 
 Start the API server:
@@ -137,6 +141,27 @@ python manage.py runserver 0.0.0.0:8000
 | `GET` | `/api/hr/dashboard/stats/` | HR Role | Returns real database metrics (`total_employees`, `total_documents`, `verified_documents`, `revoked_documents`, `recent_documents`) |
 | `GET` / `POST` | `/api/hr/employees/` | Approved HR Role | Searches, filters (`?department=`, `?search=`, `?employment_type=`, `?status=`), and onboards company employees |
 | `GET` / `PATCH` / `DELETE` | `/api/hr/employees/{id}/` | Approved HR Role | Inspects, updates, or suspends a company employee |
+
+### Super Admin Oversight (`/api/admin/`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` / `PATCH` | `/api/admin/profile/` | Super Admin | Views or updates Super Admin profile and password |
+| `GET` | `/api/admin/companies/stats/` | Super Admin | Live DB platform KPIs (`total_companies`, `pending_companies`, `total_hr_users`, `total_employees`, `total_documents`, etc.) |
+| `GET` | `/api/admin/companies/` | Super Admin | Paginated company list (`?status=`, `?search=`, `?page=`, `?page_size=`) |
+| `GET` | `/api/admin/companies/{id}/` | Super Admin | Detailed company profile and verification documents list |
+| `GET` | `/api/admin/companies/{id}/documents/{doc_key}/download/` | Super Admin | Secure download of uploaded company verification files (`incorporation`, `tax_id`, `address_proof`, `hr_authorization`) |
+| `POST` | `/api/admin/companies/{id}/approve/` | Super Admin | Approves organization registration (unlocks HR workspace) |
+| `POST` | `/api/admin/companies/{id}/reject/` | Super Admin | Rejects organization registration (requires `remarks`) |
+| `POST` | `/api/admin/companies/{id}/suspend/` | Super Admin | Suspends an approved organization |
+| `POST` | `/api/admin/companies/{id}/reactivate/` | Super Admin | Reactivates a suspended/rejected organization |
+| `GET` | `/api/admin/users/` | Super Admin | Paginated user directory (`?role=`, `?status=`, `?search=`, `?page=`) |
+| `GET` / `PATCH` | `/api/admin/users/{id}/` | Super Admin | Inspects or updates user account details |
+| `POST` | `/api/admin/users/{id}/status/` | Super Admin | Activates or suspends HR / Employee accounts (`{ status }`) |
+| `GET` | `/api/admin/documents/` | Super Admin | Lists all issued documents across companies (`?type=`, `?status=`, `?company_id=`, `?search=`, `?page=`) |
+| `GET` | `/api/admin/documents/{id}/` | Super Admin | Detailed document metadata and audit logs |
+| `POST` | `/api/admin/documents/{id}/verify/` | Super Admin | Verifies SHA-256 cryptographic integrity and logs audit event |
+| `POST` | `/api/admin/documents/{id}/revoke/` | Super Admin | Administratively revokes an issued document with `reason` |
+| `GET` | `/api/admin/activity-logs/` | Super Admin | Paginated system activity logs (`?action=`, `?target_type=`, `?search=`, `?page=`) |
 
 ---
 

@@ -31,6 +31,20 @@ class LoginView(APIView):
         tokens = AuthService.generate_tokens_for_user(user)
         user_payload = AuthService.build_user_payload(user)
 
+        try:
+            from apps.superadmin.services import ActivityLogService
+
+            ActivityLogService.log(
+                action='User Login',
+                description=f'{user.role.upper()} user {user.email} signed in.',
+                actor=user,
+                target_type='auth',
+                target_id=str(user.id),
+                request=request,
+            )
+        except Exception:
+            pass
+
         return Response(
             {
                 **tokens,

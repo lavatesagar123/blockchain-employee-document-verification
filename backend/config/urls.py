@@ -18,6 +18,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', HealthCheckView.as_view(), name='api-health'),
     path('api/auth/', include('apps.accounts.urls')),
+    path('api/admin/', include('apps.superadmin.urls')),
     path('api/companies/', include('apps.hr.company_urls')),
     path('api/hr/', include('apps.hr.urls')),
     path('api/employees/', include('apps.employees.urls')),

@@ -85,7 +85,12 @@ export const ActivityLogPage = () => {
               <option value="all">All Actions</option>
               <option value="Company Approved">Company Approved</option>
               <option value="Company Rejected">Company Rejected</option>
+              <option value="Company Suspended">Company Suspended</option>
+              <option value="Company Reactivated">Company Reactivated</option>
+              <option value="User Activated">User Activated</option>
+              <option value="User Deactivated">User Deactivated</option>
               <option value="Document Issued">Document Issued</option>
+              <option value="Document Verified">Document Verified</option>
               <option value="Document Revoked">Document Revoked</option>
               <option value="User Login">User Login</option>
             </select>

@@ -163,6 +163,20 @@ class DocumentService:
                 request=request,
             )
 
+        try:
+            from apps.superadmin.services import ActivityLogService
+
+            ActivityLogService.log(
+                action='Document Issued',
+                description=f'{company.name} issued {document.get_document_type_display()} ({document.verification_id}) for {document.recipient_name}.',
+                actor=hr_user,
+                target_type='document',
+                target_id=document.verification_id,
+                request=request,
+            )
+        except Exception:
+            pass
+
         return document
 
     @staticmethod
@@ -212,6 +226,21 @@ class DocumentService:
                 action=DocumentAuditLog.ACTION_REVOKED,
                 request=request,
             )
+
+        try:
+            from apps.superadmin.services import ActivityLogService
+
+            ActivityLogService.log(
+                action='Document Revoked',
+                description=f'{document.verification_id} ({document.recipient_name}) revoked. Reason: {document.revocation_reason}',
+                actor=user,
+                target_type='document',
+                target_id=document.verification_id,
+                request=request,
+            )
+        except Exception:
+            pass
+
         return document
 
     @staticmethod

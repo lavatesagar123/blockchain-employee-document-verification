@@ -24,6 +24,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('name', 'Platform Administrator')
+        if not extra_fields.get('username'):
+            if not self.model.objects.filter(username='admin').exists():
+                extra_fields['username'] = 'admin'
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -54,6 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ]
 
     email = models.EmailField(unique=True, max_length=255, db_index=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True, db_index=True)
     name = models.CharField(max_length=255)
     role = models.CharField(
         max_length=20,

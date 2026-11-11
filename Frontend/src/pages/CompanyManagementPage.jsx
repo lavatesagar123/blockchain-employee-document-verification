@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AdminLayout } from '../layouts/AdminLayout';
 import { companyService } from '../services/companyService';
+import { userService } from '../services/userService';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
@@ -17,7 +18,9 @@ import {
   XCircle,
   Ban,
   RotateCcw,
-  ExternalLink
+  ExternalLink,
+  Download,
+  FileCheck
 } from 'lucide-react';
 import '../styles/dashboard.css';
 
@@ -560,6 +563,55 @@ export const CompanyManagementPage = () => {
               <div>Email: {viewModalComp.hr_email || viewModalComp.hrEmail}</div>
               {viewModalComp.hr_designation && <div>Title: {viewModalComp.hr_designation}</div>}
             </div>
+
+            {Array.isArray(viewModalComp.verification_documents) && viewModalComp.verification_documents.length > 0 && (
+              <div style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <strong style={{ display: 'block', marginBottom: '0.5rem', color: '#0f172a' }}>
+                  Uploaded Verification Documents
+                </strong>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                  {viewModalComp.verification_documents.map((doc) => (
+                    <div
+                      key={doc.key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        background: '#ffffff',
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '6px',
+                        border: '1px solid #e2e8f0'
+                      }}
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: '#334155' }}>
+                        <FileCheck size={14} color="#059669" />
+                        <span>{doc.label}</span>
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-outline-emerald btn-sm"
+                        style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
+                        onClick={async () => {
+                          try {
+                            await userService.downloadCompanyVerificationDoc(
+                              viewModalComp.id,
+                              doc.key,
+                              doc.filename
+                            );
+                            addToast(`Downloaded ${doc.label}`, 'success');
+                          } catch (err) {
+                            addToast(err.message || 'Download failed.', 'error');
+                          }
+                        }}
+                      >
+                        <Download size={12} /> Download
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {viewModalComp.remarks && (
               <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '0.85rem', borderRadius: '8px' }}>

@@ -1,6 +1,7 @@
 """Authentication and session service layer."""
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -18,7 +19,9 @@ class AuthService:
             raise AuthenticationFailed('Email/User ID and password are required.')
 
         clean_identifier = identifier.strip()
-        user = User.objects.filter(email__iexact=clean_identifier).first()
+        user = User.objects.filter(
+            Q(email__iexact=clean_identifier) | Q(username__iexact=clean_identifier)
+        ).first()
 
         # Also support login via Employee ID (e.g. EMP-1001)
         if user is None:
@@ -72,6 +75,7 @@ class AuthService:
         """Build the authenticated user dictionary expected by the React frontend."""
         payload = {
             'id': user.id,
+            'username': user.username,
             'name': user.name,
             'email': user.email,
             'role': user.role,

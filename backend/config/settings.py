@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.employees',
     'apps.documents',
     'apps.hr',
+    'apps.superadmin',
 ]
 
 MIDDLEWARE = [
