@@ -1,4 +1,4 @@
-"""Root URL configuration for TrustDoc backend."""
+"""Root URL configuration for TrustDoc modular backend."""
 
 from django.contrib import admin
 from django.urls import include, path
@@ -18,10 +18,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', HealthCheckView.as_view(), name='api-health'),
     path('api/auth/', include('apps.accounts.urls')),
-    path('api/admin/', include('apps.superadmin.urls')),
-    path('api/companies/', include('apps.hr.company_urls')),
+    path('api/admin/', include('apps.admin_panel.urls')),
+    path('api/companies/', include('apps.companies.urls')),
     path('api/hr/', include('apps.hr.urls')),
     path('api/employees/', include('apps.employees.urls')),
     path('api/employee/documents/', include('apps.documents.urls')),
     path('api/documents/', include('apps.documents.shared_urls')),
+    path('api/verification/', include('apps.verification.urls')),
+    path('api/audit-logs/', include('apps.audit_logs.urls')),
+    path('api/dashboard/', include('apps.dashboard.urls')),
 ]

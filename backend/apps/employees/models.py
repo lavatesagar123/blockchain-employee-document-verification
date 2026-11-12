@@ -2,9 +2,10 @@
 
 from django.conf import settings
 from django.db import models
+from apps.common.models import TimeStampedModel
 
 
-class Company(models.Model):
+class Company(TimeStampedModel):
     """Corporate issuing organization linked to employees and issued documents."""
 
     STATUS_PENDING = 'pending'
@@ -65,8 +66,6 @@ class Company(models.Model):
         default=STATUS_PENDING,
         db_index=True,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'companies'
@@ -78,7 +77,7 @@ class Company(models.Model):
         return f'{self.name} ({self.registration_number})'
 
 
-class EmployeeProfile(models.Model):
+class EmployeeProfile(TimeStampedModel):
     """Profile record for an authenticated Employee user."""
 
     EMPLOYMENT_FULL_TIME = 'Full Time'
@@ -119,8 +118,6 @@ class EmployeeProfile(models.Model):
     location = models.CharField(max_length=200, blank=True, default='')
     bio = models.TextField(blank=True, default='')
     linkedin_url = models.URLField(max_length=255, blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'employee_profiles'

@@ -1,6 +1,6 @@
-# TrustDoc — Employee Panel Backend (Django REST Framework + MySQL)
+# TrustDoc — Unified Backend (Django REST Framework + MySQL)
 
-Backend REST API powering the **Employee Panel** of the TrustDoc Blockchain Employee Document Verification System.
+Modular REST API powering the **Employee**, **HR**, **Super Admin**, and **Public Verification** panels of the TrustDoc Blockchain Employee Document Verification System.
 
 ---
 
@@ -13,13 +13,20 @@ backend/
 ├── .env.example
 ├── config/
 │   ├── settings.py          # Environment-driven Django, DRF, SimpleJWT, CORS & MySQL config
-│   └── urls.py              # Root API routing
+│   ├── urls.py              # Root API routing
+│   └── wsgi.py
 └── apps/
-    ├── accounts/            # Custom User model, JWT auth, RBAC permissions, AuthService
-    ├── employees/           # Company & EmployeeProfile models, registration, profile APIs
-    ├── hr/                  # HRProfile, Company registration/profiles, workforce directory, HR stats
-    ├── superadmin/          # ActivityLog, Company moderation, User oversight, Document audit, KPIs
-    └── documents/           # IssuedDocument, DocumentAuditLog, issuance, revocation, multi-page QR PDFs
+    ├── common/              # Shared TimeStampedModel, RBAC permissions, pagination, exception handler, utilities
+    ├── accounts/            # Custom User model, JWT auth, AuthService
+    ├── companies/           # Company registration, status lookup, profiles, moderation & doc downloads
+    ├── employees/           # Company & EmployeeProfile models, employee registration & self-service profile APIs
+    ├── documents/           # IssuedDocument, DocumentAuditLog, issuance, revocation, multi-page QR PDFs
+    ├── verification/        # Public & admin SHA-256 verification service and endpoints
+    ├── audit_logs/          # Shared AuditLogService & ActivityLog query endpoints
+    ├── dashboard/           # Shared DashboardService & unified KPI endpoints for Admin, HR & Employee
+    ├── hr/                  # HRProfile, HR workspace profile & workforce directory
+    ├── admin_panel/         # Super Admin profile, user lifecycle, company moderation & document oversight
+    └── superadmin/          # ActivityLog model/migrations + backward-compatible re-exports
 ```
 
 ---
@@ -162,6 +169,16 @@ python manage.py runserver 0.0.0.0:8000
 | `POST` | `/api/admin/documents/{id}/verify/` | Super Admin | Verifies SHA-256 cryptographic integrity and logs audit event |
 | `POST` | `/api/admin/documents/{id}/revoke/` | Super Admin | Administratively revokes an issued document with `reason` |
 | `GET` | `/api/admin/activity-logs/` | Super Admin | Paginated system activity logs (`?action=`, `?target_type=`, `?search=`, `?page=`) |
+
+### Unified Verification, Dashboards & Audit Logs (`/api/verification/`, `/api/dashboard/`, `/api/audit-logs/`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/verification/{verification_id}/` | Public | Looks up and verifies an issued document by `verification_id` or `reference_number` |
+| `POST` | `/api/verification/verify/` | Public | Verifies `verification_id` against an optional uploaded `document_file` via SHA-256 |
+| `GET` | `/api/dashboard/admin/` | Super Admin | Unified Super Admin dashboard KPIs |
+| `GET` | `/api/dashboard/hr/` | HR Role | Unified HR company workspace KPIs |
+| `GET` | `/api/dashboard/employee/` | Employee Role | Unified Employee credential summary counts |
+| `GET` | `/api/audit-logs/` | Super Admin | Paginated audit/activity logs (`?action=`, `?target_type=`, `?search=`) |
 
 ---
 

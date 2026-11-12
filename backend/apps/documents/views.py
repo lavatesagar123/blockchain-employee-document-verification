@@ -1,14 +1,17 @@
 """API views for Employee & HR Document Issuance, Listing, Inspection, Revocation, and Secure Download."""
 
-from django.http import FileResponse
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsApprovedHRAdmin, IsEmployee
+from apps.common.permissions import (
+    IsApprovedHRAdmin,
+    IsDocumentOwnerOrAuthorized,
+    IsEmployee,
+)
+from apps.common.utils import build_secure_download_response
 from .models import DocumentAuditLog
-from .permissions import IsDocumentOwnerOrAuthorized
 from .serializers import (
     DocumentIssuanceSerializer,
     DocumentRevokeSerializer,
@@ -126,12 +129,4 @@ class SecureDocumentDownloadView(APIView):
             request=request,
         )
 
-        response = FileResponse(
-            stream,
-            as_attachment=True,
-            filename=filename,
-            content_type=content_type,
-        )
-        response['X-Content-Type-Options'] = 'nosniff'
-        response['Cache-Control'] = 'private, no-store'
-        return response
+        return build_secure_download_response(stream, content_type, filename)

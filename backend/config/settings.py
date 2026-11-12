@@ -50,10 +50,16 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     # Local domain apps
+    'apps.common',
     'apps.accounts',
+    'apps.companies',
     'apps.employees',
     'apps.documents',
+    'apps.verification',
+    'apps.audit_logs',
     'apps.hr',
+    'apps.admin_panel',
+    'apps.dashboard',
     'apps.superadmin',
 ]
 
@@ -154,6 +160,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
+    'EXCEPTION_HANDLER': 'apps.common.exceptions.custom_exception_handler',
 }
 
 if DEBUG:

@@ -1,13 +1,3 @@
-from django.urls import path
-from .views import (
-    CompanyProfileMeView,
-    CompanyRegisterView,
-    CompanyStatusView,
-)
+"""Re-exports shared company URLs from apps.companies.urls."""
 
-urlpatterns = [
-    path('register/', CompanyRegisterView.as_view(), name='company-register'),
-    path('status/', CompanyStatusView.as_view(), name='company-status'),
-    path('me/', CompanyProfileMeView.as_view(), name='company-profile-me'),
-]
-
+from apps.companies.urls import urlpatterns  # noqa: F401

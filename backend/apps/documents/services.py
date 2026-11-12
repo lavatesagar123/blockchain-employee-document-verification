@@ -2,12 +2,9 @@
 
 import hashlib
 import io
-import mimetypes
-import os
 import re
 import uuid
 from datetime import date
-from pathlib import Path
 from xml.sax.saxutils import escape
 
 from django.conf import settings
@@ -31,6 +28,13 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from apps.common.utils import (
+    build_safe_media_stream,
+    compute_sha256_bytes,
+    compute_sha256_file,
+    extract_client_ip,
+    extract_user_agent,
+)
 from apps.employees.models import EmployeeProfile
 from apps.employees.services import EmployeeService
 from .models import DocumentAuditLog, IssuedDocument
@@ -148,9 +152,7 @@ class DocumentService:
 
         # Compute & persist SHA-256 fingerprint of attachment or generated PDF
         if uploaded_file:
-            uploaded_file.seek(0)
-            document.file_hash = hashlib.sha256(uploaded_file.read()).hexdigest()
-            uploaded_file.seek(0)
+            document.file_hash = compute_sha256_file(uploaded_file)
             document.save(update_fields=['file_hash', 'updated_at'])
         else:
             DocumentService.generate_certificate_pdf_bytes(document)
@@ -164,9 +166,9 @@ class DocumentService:
             )
 
         try:
-            from apps.superadmin.services import ActivityLogService
+            from apps.audit_logs.services import AuditLogService
 
-            ActivityLogService.log(
+            AuditLogService.log(
                 action='Document Issued',
                 description=f'{company.name} issued {document.get_document_type_display()} ({document.verification_id}) for {document.recipient_name}.',
                 actor=hr_user,
@@ -228,9 +230,9 @@ class DocumentService:
             )
 
         try:
-            from apps.superadmin.services import ActivityLogService
+            from apps.audit_logs.services import AuditLogService
 
-            ActivityLogService.log(
+            AuditLogService.log(
                 action='Document Revoked',
                 description=f'{document.verification_id} ({document.recipient_name}) revoked. Reason: {document.revocation_reason}',
                 actor=user,
@@ -298,16 +300,12 @@ class DocumentService:
     @staticmethod
     def record_audit_event(document: IssuedDocument, user, action: str, request) -> None:
         """Persist document view/download/issue/revoke audit entry in database."""
-        forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        ip_address = forwarded_for.split(',')[0].strip() if forwarded_for else request.META.get('REMOTE_ADDR')
-        user_agent = (request.META.get('HTTP_USER_AGENT') or '')[:500]
-
         DocumentAuditLog.objects.create(
             document=document,
             user=user if getattr(user, 'is_authenticated', False) else None,
             action=action,
-            ip_address=ip_address or None,
-            user_agent=user_agent,
+            ip_address=extract_client_ip(request),
+            user_agent=extract_user_agent(request),
         )
 
     @staticmethod
@@ -569,7 +567,7 @@ class DocumentService:
         buffer.close()
 
         if not document.file_hash:
-            document.file_hash = hashlib.sha256(pdf_bytes).hexdigest()
+            document.file_hash = compute_sha256_bytes(pdf_bytes)
             document.save(update_fields=['file_hash', 'updated_at'])
 
         return pdf_bytes
@@ -578,20 +576,9 @@ class DocumentService:
     def get_download_payload(document: IssuedDocument) -> tuple[io.BytesIO, str, str]:
         """Return (BytesIO stream, content_type, safe_filename) with path traversal protection."""
         filename = DocumentService.build_safe_download_filename(document)
-
-        if document.file:
-            media_root = Path(os.path.realpath(settings.MEDIA_ROOT))
-            target_path = Path(os.path.realpath(document.file.path))
-            if media_root not in target_path.parents:
-                raise PermissionDenied('Access to requested file path is denied.')
-            if target_path.is_file():
-                with open(target_path, 'rb') as fh:
-                    content = fh.read()
-                guessed_type, _ = mimetypes.guess_type(str(target_path))
-                content_type = guessed_type or 'application/pdf'
-                if target_path.suffix:
-                    filename = f'{Path(filename).stem}{target_path.suffix}'
-                return io.BytesIO(content), content_type, filename
+        stored_payload = build_safe_media_stream(document.file, download_name=filename)
+        if stored_payload is not None:
+            return stored_payload
 
         pdf_bytes = DocumentService.generate_certificate_pdf_bytes(document)
         return io.BytesIO(pdf_bytes), 'application/pdf', filename

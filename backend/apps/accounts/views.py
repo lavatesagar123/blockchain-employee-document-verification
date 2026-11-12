@@ -32,9 +32,9 @@ class LoginView(APIView):
         user_payload = AuthService.build_user_payload(user)
 
         try:
-            from apps.superadmin.services import ActivityLogService
+            from apps.audit_logs.services import AuditLogService
 
-            ActivityLogService.log(
+            AuditLogService.log(
                 action='User Login',
                 description=f'{user.role.upper()} user {user.email} signed in.',
                 actor=user,

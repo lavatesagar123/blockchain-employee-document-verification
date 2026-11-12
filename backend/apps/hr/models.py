@@ -2,9 +2,10 @@
 
 from django.conf import settings
 from django.db import models
+from apps.common.models import TimeStampedModel
 
 
-class HRProfile(models.Model):
+class HRProfile(TimeStampedModel):
     """Profile record linking an HR Administrator user account to an issuing Company."""
 
     user = models.OneToOneField(
@@ -20,8 +21,6 @@ class HRProfile(models.Model):
     designation = models.CharField(max_length=150, default='HR Manager')
     phone = models.CharField(max_length=30, blank=True, default='')
     is_primary = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'hr_profiles'

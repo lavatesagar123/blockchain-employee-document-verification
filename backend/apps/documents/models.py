@@ -2,9 +2,10 @@
 
 from django.conf import settings
 from django.db import models
+from apps.common.models import TimeStampedModel
 
 
-class IssuedDocument(models.Model):
+class IssuedDocument(TimeStampedModel):
     """Employment document anchored to the TrustDoc verification ledger."""
 
     TYPE_OFFER = 'offer_letter'
@@ -92,8 +93,6 @@ class IssuedDocument(models.Model):
     block_number = models.PositiveBigIntegerField(null=True, blank=True)
 
     issue_date = models.DateField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'issued_documents'

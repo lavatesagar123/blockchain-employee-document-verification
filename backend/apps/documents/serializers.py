@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from rest_framework import serializers
+from apps.common.utils import validate_uploaded_file
 from .models import IssuedDocument
 
 
@@ -140,15 +141,7 @@ class DocumentIssuanceSerializer(serializers.Serializer):
     file = serializers.FileField(required=False, allow_null=True)
 
     def validate_file(self, value):
-        if value is None:
-            return None
-        max_bytes = 10 * 1024 * 1024  # 10 MB
-        if value.size > max_bytes:
-            raise serializers.ValidationError('Attachment size must not exceed 10 MB.')
-        allowed_ext = ('.pdf', '.png', '.jpg', '.jpeg')
-        if not value.name.lower().endswith(allowed_ext):
-            raise serializers.ValidationError('Only PDF, PNG, and JPG files are allowed.')
-        return value
+        return validate_uploaded_file(value, allowed_ext=('.pdf', '.png', '.jpg', '.jpeg'), max_mb=10)
 
     def validate(self, attrs):
         doc_type = attrs.get('document_type')

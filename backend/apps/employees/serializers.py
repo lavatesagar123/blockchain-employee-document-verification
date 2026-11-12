@@ -1,18 +1,8 @@
 """Serializers for employee registration and profile management."""
 
-import re
 from rest_framework import serializers
+from apps.common.utils import validate_phone_number
 from .models import EmployeeProfile
-
-
-def _validate_phone_digits(value: str) -> str:
-    cleaned = value.strip()
-    if not cleaned:
-        return ''
-    digits = re.sub(r'[^0-9]', '', cleaned)
-    if len(digits) < 7 or len(digits) > 15:
-        raise serializers.ValidationError('Enter a valid phone number (7 to 15 digits).')
-    return cleaned
 
 
 class EmployeeRegistrationSerializer(serializers.Serializer):
@@ -33,7 +23,7 @@ class EmployeeRegistrationSerializer(serializers.Serializer):
         return value.strip()
 
     def validate_phone(self, value):
-        return _validate_phone_digits(value)
+        return validate_phone_number(value)
 
 
 class EmployeeProfileSerializer(serializers.ModelSerializer):
@@ -100,4 +90,4 @@ class EmployeeProfileUpdateSerializer(serializers.Serializer):
         return value.strip()
 
     def validate_phone(self, value):
-        return _validate_phone_digits(value)
+        return validate_phone_number(value)
